@@ -1,0 +1,28 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="jWWREkCYEuH6FqV-gnA3">
+    <mxGraphModel dx="1504" dy="832" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="76cVODLnmgbmPmDhCo48-5" value="User Service&lt;div&gt;- ManageUser details&lt;/div&gt;&lt;div&gt;- Manage User Profiles&lt;/div&gt;&lt;div&gt;- Registration&lt;/div&gt;&lt;div&gt;- Types of User: General Pop, Business Owner&lt;/div&gt;&lt;div&gt;- Manage facilities for Business Owner&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-60" y="125" width="230" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="76cVODLnmgbmPmDhCo48-6" value="&lt;div&gt;Payments &amp;amp; Subscription Service&lt;/div&gt;&lt;div&gt;- Manage user subscriptions&lt;/div&gt;&lt;div&gt;- Handle Payments&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-50" y="340" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="76cVODLnmgbmPmDhCo48-8" value="Auth Service&lt;div&gt;- User login (token gen)&lt;/div&gt;&lt;div&gt;- Authorization&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="140" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="76cVODLnmgbmPmDhCo48-9" value="Email Notif Service&lt;div&gt;- Possible to send AQ metrics to ChatGPT to get recomendations&amp;nbsp;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-30" y="540" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="76cVODLnmgbmPmDhCo48-10" value="Document Reporting Export Service&lt;div&gt;- Generate reports: CSV, PDF&lt;/div&gt;&lt;div&gt;- Historical Air Quality Data at Location(s)&lt;/div&gt;&lt;div&gt;- Facilities recommendation report (more detailled/ more than 1 recommendation)&lt;/div&gt;&lt;div&gt;- Carbon tax report generation (Total emission for facillities * Price per Carbon)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="540" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="76cVODLnmgbmPmDhCo48-11" value="Air Quality Service&lt;div&gt;- Manages user&#39;s saved locations to watch&lt;/div&gt;&lt;div&gt;- Fetch data from thrid party API at these locations. Store in DB&lt;/div&gt;&lt;div&gt;- Provide AQ metric at given position&lt;/div&gt;&lt;div&gt;- Recommend good location to build Business Facilities&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="310" width="260" height="170" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
