@@ -1,12 +1,14 @@
-package handler
+package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"os"
 	"strconv"
 	"sub-payment-service/entity"
 	"sub-payment-service/model"
+	"sub-payment-service/pb"
 	"sub-payment-service/service"
 	"sub-payment-service/util"
 
@@ -14,13 +16,34 @@ import (
 	"gorm.io/gorm"
 )
 
-type PaymentHandler struct {
+type PaymentServer struct {
 	db                *gorm.DB
 	emailNotifService service.EmailNotifService
+	pb.UnimplementedSubPaymentServer
 }
 
-func NewPaymentHandler(db *gorm.DB, emailNotifService service.EmailNotifService) *PaymentHandler {
-	return &PaymentHandler{
+// CompletePayment implements pb.SubPaymentServer.
+func (ps *PaymentServer) CompletePayment(context.Context, *pb.CompletePaymentReq) (*pb.CompletePaymentResp, error) {
+	panic("unimplemented")
+}
+
+// CreateUserSubcription implements pb.SubPaymentServer.
+func (ps *PaymentServer) CreateUserSubcription(context.Context, *pb.CreateUserSubcriptionReq) (*pb.CreateUserSubcriptionResp, error) {
+	panic("unimplemented")
+}
+
+// GetUserSubcriptions implements pb.SubPaymentServer.
+func (ps *PaymentServer) GetUserSubcriptions(context.Context, *pb.GetUserSubcriptionsReq) (*pb.GetUserSubcriptionsResp, error) {
+	panic("unimplemented")
+}
+
+// mustEmbedUnimplementedSubPaymentServer implements pb.SubPaymentServer.
+func (ps *PaymentServer) mustEmbedUnimplementedSubPaymentServer() {
+	panic("unimplemented")
+}
+
+func NewPaymentServer(db *gorm.DB, emailNotifService service.EmailNotifService) *PaymentServer {
+	return &PaymentServer{
 		db:                db,
 		emailNotifService: emailNotifService,
 	}
@@ -41,12 +64,12 @@ type PaymentResp struct {
 	PaidAmount    float64 `json:"paid_amount"`
 }
 
-func (ph *PaymentHandler) GetUserForPayment(p *model.Payment) *entity.User {
+func (ph *PaymentServer) GetUserForPayment(p *model.Payment) *entity.User {
 	// TODO
 	return nil
 }
 
-func (ph *PaymentHandler) HandlePaymentSuccess(c echo.Context) error {
+func (ph *PaymentServer) HandlePaymentSuccess(c echo.Context) error {
 	// verify webhook token
 	verifToken := c.Request().Header.Get("x-callback-token")
 	if verifToken == "" || verifToken != os.Getenv("XENDIT_WEBHOOK_TOKEN") {
