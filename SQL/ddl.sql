@@ -44,12 +44,14 @@ CREATE TABLE air_quality (
     id SERIAL PRIMARY KEY,
     location_id INT REFERENCES locations(id) ON DELETE CASCADE,
     aqi INT NOT NULL,  -- Air Quality Index
+    co DECIMAL(5,2),    -- Carbon Monoxide
+    no DECIMAL(5,2), -- Nitrogen Monoxide
+    no2 DECIMAL(5,2),   -- Nitrogen Dioxide
+    o3 DECIMAL(5,2),    -- Ozone
+    so2 DECIMAL(5,2),   -- Sulfur Dioxide
     pm25 DECIMAL(5,2),  -- Particulate matter <2.5 micrometers
     pm10 DECIMAL(5,2),  -- Particulate matter <10 micrometers
-    o3 DECIMAL(5,2),    -- Ozone
-    no2 DECIMAL(5,2),   -- Nitrogen Dioxide
-    so2 DECIMAL(5,2),   -- Sulfur Dioxide
-    co DECIMAL(5,2),    -- Carbon Monoxide
+    nh3 DECIMAL(5,2), -- Ammonia
     fetch_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
