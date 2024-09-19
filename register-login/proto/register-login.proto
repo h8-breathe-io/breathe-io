@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package registerlogin;
+
+option go_package = "/proto/pb";
+
+service RegisterLogin {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string phonenumber = 3;
+  string password = 4;
+  string tier = 5;  // 'free' or 'business'
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  string message = 1;
+}
+
+message LoginResponse {
+  string message = 1;
+}

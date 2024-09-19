@@ -3,11 +3,13 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    phonenumber VARCHAR(15) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     tier VARCHAR(20) CHECK (tier IN ('free', 'business')) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Create Locations Table to store user's saved locations
 CREATE TABLE locations (

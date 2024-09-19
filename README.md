@@ -1,13 +1,17 @@
-# breathe-io
-
-## gdrive with brainstorming
-
-https://drive.google.com/drive/folders/1QPS_OQFlzARkl7NMHFsiZhKVE-XqwLk7?usp=drive_link
-
-# Breathe.io: Free Tier & Business Tier
+# Breathe-io
 
 ## Overview
 Layanan Breathe.io menyediakan dua tingkat layanan utama: **Free Tier** dan **Business Tier**. Setiap layanan menawarkan fitur-fitur khusus untuk membantu pengguna memantau kualitas udara dan mendapatkan rekomendasi terkait kesehatan serta dampak lingkungan. Pada Business Tier, pengguna bisnis dapat memantau emisi karbon perusahaan dan mendapatkan laporan yang lebih rinci tentang kualitas udara serta emisi di berbagai lokasi.
+
+## gdrive with brainstorming
+```
+https://drive.google.com/drive/folders/1QPS_OQFlzARkl7NMHFsiZhKVE-XqwLk7?usp=drive_link
+```
+
+## Coretan
+```
+https://excalidraw.com/#json=RNy2gegtaJurt5RCrTcl0,GlqvPX5bDQa-FnIVzzjjAA
+```
 
 ## Free Tier Process
 
