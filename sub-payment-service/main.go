@@ -3,22 +3,17 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 
-	"sub-payment-service/auth"
 	"sub-payment-service/config"
-	"sub-payment-service/handler"
+	pb "sub-payment-service/pb"
+	"sub-payment-service/server"
 	"sub-payment-service/service"
 
 	// _ "h8-p2-finalproj-app/docs"
 
-	"sub-payment-service/util"
-
-	"github.com/golang-jwt/jwt/v5"
-
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"google.golang.org/grpc"
 )
 
 //	@title			H8 P2 Final Project App
@@ -39,32 +34,27 @@ import (
 func main() {
 	db := config.CreateDBInstance()
 
-	e := echo.New()
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
-	e.HTTPErrorHandler = util.ErrorHandler
-
-	// jwt middleware
-	config := echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(auth.JwtAppClaims)
-		},
-		SigningKey: []byte(os.Getenv("JWT_KEY")),
-	}
-	jwtAuth := echojwt.WithConfig(config)
-
 	// instantiate dependencies
 	emailNotifService := service.NewEmailNotifService()
 
 	// payments, for call backs by xendit
-	payment := handler.NewPaymentHandler(db, emailNotifService)
-	payments := e.Group("/payments")
-	payments.Use(jwtAuth)
-	payments.POST("/callback", payment.HandlePaymentSuccess)
-
+	paymentServer := server.NewPaymentServer(db, emailNotifService)
 	// swagger docs
 	// e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	// start server
-	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))))
+	opts := []grpc.ServerOption{
+		// The following grpc.ServerOption adds an interceptor for all unary
+		// RPCs. To configure an interceptor for streaming RPCs, see:
+		// https://godoc.org/google.golang.org/grpc#StreamInterceptor
+		// grpc.UnaryInterceptor(jwtIntercept.EnsureValidToken),
+	}
+	port := os.Getenv("LISTEN_PORT")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterSubPaymentServer(grpcServer, paymentServer)
+	log.Printf("starting gRPC server on %s", port)
+	log.Fatal(grpcServer.Serve(lis))
 }
