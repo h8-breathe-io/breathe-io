@@ -36,9 +36,9 @@ func main() {
 
 	// instantiate dependencies
 	emailNotifService := service.NewEmailNotifService()
-
+	invoiceService := service.NewInvoiceService()
 	// payments, for call backs by xendit
-	paymentServer := server.NewPaymentServer(db, emailNotifService)
+	paymentServer := server.NewPaymentServer(db, emailNotifService, invoiceService)
 	// swagger docs
 	// e.GET("/swagger/*", echoSwagger.WrapHandler)
 

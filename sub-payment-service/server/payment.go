@@ -6,30 +6,170 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"sub-payment-service/entity"
+	"strings"
 	"sub-payment-service/model"
 	"sub-payment-service/pb"
 	"sub-payment-service/service"
-	"sub-payment-service/util"
 
-	"github.com/labstack/echo/v4"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
+
+func NewPaymentServer(
+	db *gorm.DB,
+	emailNotifService service.EmailNotifService,
+	invoiceService service.InvoiceService) *PaymentServer {
+	return &PaymentServer{
+		db:                db,
+		emailNotifService: emailNotifService,
+		invoiceService:    invoiceService,
+	}
+}
 
 type PaymentServer struct {
 	db                *gorm.DB
 	emailNotifService service.EmailNotifService
+	invoiceService    service.InvoiceService
 	pb.UnimplementedSubPaymentServer
 }
 
 // CompletePayment implements pb.SubPaymentServer.
-func (ps *PaymentServer) CompletePayment(context.Context, *pb.CompletePaymentReq) (*pb.CompletePaymentResp, error) {
-	panic("unimplemented")
+func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaymentReq) (*pb.CompletePaymentResp, error) {
+	// verify webhook token
+	verifToken := req.CallbackToken
+	if verifToken == "" || verifToken != os.Getenv("XENDIT_WEBHOOK_TOKEN") {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid webhook token")
+	}
+
+	// validate req
+	if req.PaymentMethod == "" || req.PaidAmount <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "payment method and paid amount cannot be empty")
+	}
+
+	// get corresponding payment
+	paymentId, err := strconv.Atoi(req.ExternalId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid payment id: %s", req.ExternalId)
+	}
+	var payment model.Payment
+	err = ps.db.Where("id=?", paymentId).Select("*").First(&payment).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "payment not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Unknown, "internal server error: %s", err.Error())
+	}
+
+	// check payment not updated yet
+	if payment.Status != "pending" {
+		return nil, status.Errorf(http.StatusBadRequest, "payment already updated")
+	}
+
+	// update payment
+	payment.PaymentGateway = req.PaymentMethod
+	payment.Amount = float64(req.PaidAmount)
+	if req.Status == "PAID" {
+		payment.Status = "completed"
+	} else {
+		payment.Status = "failed"
+	}
+	err = ps.db.Save(&payment).Error
+	if err != nil {
+		return nil, status.Errorf(http.StatusInternalServerError, "internal server error: %s", err.Error())
+	}
+
+	// send email is successful
+	// get user
+	// if user := ps.GetUserForPayment(&payment); user != nil {
+	// 	if payment.Status == "Completed" {
+	// 		// TODO
+	// 		ps.emailNotifService.NotifyPaymentSucccess()
+	// 	}
+	// }
+
+	return &pb.CompletePaymentResp{}, nil
+}
+
+func (ps *PaymentServer) validateUserSubscriptionData(req *pb.CreateUserSubcriptionReq) error {
+	// Check if UserID is provided and valid
+	if req.UserId <= 0 {
+		return errors.New("user_id must be a positive integer")
+	}
+
+	// Check if Tier is provided and valid (non-empty and meaningful)
+	if strings.TrimSpace(req.Tier) == "" {
+		return errors.New("tier cannot be empty")
+	}
+
+	// Check if Duration is valid (positive integer)
+	if req.Duration <= 0 {
+		return errors.New("duration must be a positive integer")
+	}
+
+	return nil
 }
 
 // CreateUserSubcription implements pb.SubPaymentServer.
-func (ps *PaymentServer) CreateUserSubcription(context.Context, *pb.CreateUserSubcriptionReq) (*pb.CreateUserSubcriptionResp, error) {
-	panic("unimplemented")
+func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.CreateUserSubcriptionReq) (*pb.CreateUserSubcriptionResp, error) {
+	err := ps.validateUserSubscriptionData(req)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid request: %s", err.Error())
+	}
+
+	// check user exists?
+	//TODO
+
+	// get subscribtion
+	var sub model.Subscription
+	err = ps.db.Where("tier=?", req.Tier).First(&sub).Error
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "subscription tier '%s' does not exist", req.GetTier())
+	}
+	// TODO only allow business
+
+	// generate payment and invoice
+	newPayment := &model.Payment{
+		UserID:         int(req.UserId),
+		PaymentGateway: "xendit",
+		Amount:         sub.PricePerMonth * float64(req.Duration),
+		Currency:       "IDR",
+		Status:         "pending",
+		// TODO generate invoice
+		Url: "test",
+	}
+
+	//create new model
+	newUserSub := &model.UserSubscription{
+		UserID:         uint(req.UserId),
+		SubscriptionID: sub.ID,
+		Duration:       int(req.Duration),
+		Payment:        *newPayment,
+	}
+	err = ps.db.Save(newUserSub).Error
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "unknown: %s", err.Error())
+	}
+	newPayment = &newUserSub.Payment
+
+	return &pb.CreateUserSubcriptionResp{
+		Id:     int64(newUserSub.ID),
+		UserId: int64(newUserSub.UserID),
+		Subscription: &pb.Subscription{
+			Id:            int64(sub.ID),
+			Tier:          sub.Tier,
+			PricePerMonth: float32(sub.PricePerMonth),
+		},
+		Duration: int64(newUserSub.Duration),
+		Payment: &pb.Payment{
+			Id:             int64(newPayment.ID),
+			UserId:         int64(newPayment.UserID),
+			PaymentGateway: newPayment.PaymentGateway,
+			Amount:         float32(newPayment.Amount),
+			Currency:       newPayment.Currency,
+			Status:         newPayment.Status,
+			Url:            newPayment.Url,
+		},
+	}, nil
 }
 
 // GetUserSubcriptions implements pb.SubPaymentServer.
@@ -40,98 +180,4 @@ func (ps *PaymentServer) GetUserSubcriptions(context.Context, *pb.GetUserSubcrip
 // mustEmbedUnimplementedSubPaymentServer implements pb.SubPaymentServer.
 func (ps *PaymentServer) mustEmbedUnimplementedSubPaymentServer() {
 	panic("unimplemented")
-}
-
-func NewPaymentServer(db *gorm.DB, emailNotifService service.EmailNotifService) *PaymentServer {
-	return &PaymentServer{
-		db:                db,
-		emailNotifService: emailNotifService,
-	}
-}
-
-// webhook payload structure
-type WebhookPayload struct {
-	ID            string  `json:"id"`
-	ExternalID    string  `json:"external_id"`
-	PaymentMethod string  `json:"payment_method"`
-	PaidAmount    float64 `json:"paid_amount"`
-	Status        string  `json:"status"`
-}
-
-type PaymentResp struct {
-	ID            uint    `json:"payment_id"`
-	PaymentMethod string  `json:"payment_method"`
-	PaidAmount    float64 `json:"paid_amount"`
-}
-
-func (ph *PaymentServer) GetUserForPayment(p *model.Payment) *entity.User {
-	// TODO
-	return nil
-}
-
-func (ph *PaymentServer) HandlePaymentSuccess(c echo.Context) error {
-	// verify webhook token
-	verifToken := c.Request().Header.Get("x-callback-token")
-	if verifToken == "" || verifToken != os.Getenv("XENDIT_WEBHOOK_TOKEN") {
-		return util.NewAppError(http.StatusUnauthorized, "invalid webhook token", "")
-	}
-
-	// parse body
-	var reqBody WebhookPayload
-	err := c.Bind(&reqBody)
-	if err != nil {
-		return util.NewAppError(http.StatusBadRequest, "bad request", err.Error())
-	}
-	if reqBody.PaymentMethod == "" || reqBody.PaidAmount <= 0 {
-		return util.NewAppError(http.StatusBadRequest, "payment method and paid amount cannot be empty", "")
-	}
-
-	// get corresponding payment
-	paymentId, err := strconv.Atoi(reqBody.ExternalID)
-	if err != nil {
-		return util.NewAppError(http.StatusBadRequest, "invalid payment id", "")
-	}
-	var payment model.Payment
-	err = ph.db.Where("id=?", paymentId).Select("*").First(&payment).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return util.NewAppError(http.StatusNotFound, "payment not found", "")
-	} else if err != nil {
-		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
-	}
-
-	// check payment not updated yet
-	if payment.Status != "Unpaid" {
-		return util.NewAppError(http.StatusBadRequest, "payment already updated", "")
-	}
-
-	// update payment
-	payment.PaymentMethod = reqBody.PaymentMethod
-	payment.TotalPayment = reqBody.PaidAmount
-	if reqBody.Status == "PAID" {
-		payment.Status = "Completed"
-	} else {
-		payment.Status = reqBody.Status
-	}
-	err = ph.db.Save(&payment).Error
-	if err != nil {
-		return util.NewAppError(http.StatusInternalServerError, "internal server error", err.Error())
-	}
-
-	// send email is successful
-	// get user
-	if user := ph.GetUserForPayment(&payment); user != nil {
-		if payment.Status == "Completed" {
-			// TODO
-			ph.emailNotifService.NotifyPaymentSucccess()
-		}
-	}
-
-	return c.JSON(http.StatusOK, map[string]any{
-		"message": "payment updated successfully",
-		"payment": PaymentResp{
-			ID:            payment.ID,
-			PaymentMethod: payment.PaymentMethod,
-			PaidAmount:    payment.TotalPayment,
-		},
-	})
 }

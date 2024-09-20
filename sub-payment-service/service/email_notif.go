@@ -11,4 +11,6 @@ func NewEmailNotifService() EmailNotifService {
 type emailNotifService struct {
 }
 
-func (es *emailNotifService) NotifyPaymentSucccess()
+func (es *emailNotifService) NotifyPaymentSucccess() {
+
+}
