@@ -11,7 +11,7 @@ import (
 	"sub-payment-service/server"
 	"sub-payment-service/service"
 
-	// _ "h8-p2-finalproj-app/docs"
+	// _ "api-gateway/docs"
 
 	"google.golang.org/grpc"
 )
