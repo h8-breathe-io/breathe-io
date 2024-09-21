@@ -11,36 +11,26 @@ import (
 	"sub-payment-service/server"
 	"sub-payment-service/service"
 
-	// _ "h8-p2-finalproj-app/docs"
+	// _ "api-gateway/docs"
 
 	"google.golang.org/grpc"
 )
 
-//	@title			H8 P2 Final Project App
-//	@version		1.0
-//	@description	Hacktiv8 Phase 2 Final Project
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-//	@host		localhost:8080
-//	@BasePath	/
-
-//	@securitydefinitions.basic	BasicAuth
-//	@tokenUrl					https://localhost:8080/users/login
-//	@scope.read					Grants read access
-//	@scope.write				Grants write access
-
 func main() {
 	db := config.CreateDBInstance()
 
-	// instantiate dependencies
+	// instantiate services
 	emailNotifService := service.NewEmailNotifService()
+	invoiceService := service.NewInvoiceService()
+	userService := service.NewUserService()
 
-	// payments, for call backs by xendit
-	paymentServer := server.NewPaymentServer(db, emailNotifService)
-	// swagger docs
-	// e.GET("/swagger/*", echoSwagger.WrapHandler)
+	// subs-payments grpc server handler
+	paymentServer := server.NewPaymentServer(
+		db,
+		emailNotifService,
+		invoiceService,
+		userService,
+	)
 
 	opts := []grpc.ServerOption{
 		// The following grpc.ServerOption adds an interceptor for all unary

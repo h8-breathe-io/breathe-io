@@ -55,11 +55,16 @@ message GetUserSubcriptionsResp{
 }
 
 message CompletePaymentReq{
-    //TODO
+    string callback_token=1;
+    string id=2;
+    string external_id=3;
+    string payment_method=4;
+    float paid_amount=5;
+    string status=6;
 }
 
 message CompletePaymentResp{
-    //TODO
+    Payment payment=1;
 }
 
 service SubPayment{
