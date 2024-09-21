@@ -25,8 +25,9 @@ type Subscription struct {
 
 type UserSubscription struct {
 	gorm.Model
-	UserID         uint       `gorm:"not null"`       // Reference to users table
-	SubscriptionID uint       `gorm:"not null"`       // Reference to subscriptions table
+	UserID         uint `gorm:"not null"` // Reference to users table
+	SubscriptionID uint `gorm:"not null"`
+	Subscription   Subscription
 	Duration       int        `gorm:"not null"`       // Duration of the subscription
 	EndDate        *time.Time `gorm:"type:timestamp"` // End date of the subscription
 	PaymentID      uint       `gorm:"not null"`       // Reference to payments table

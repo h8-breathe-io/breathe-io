@@ -8,54 +8,84 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sub-payment-service/entity"
+	"sub-payment-service/model"
 )
 
 type InvoiceService interface {
-	GenerateInvoice(id uint,
-		amount float64,
-		desc string,
-		email string,
+	GenerateInvoice(
+		forUser *entity.User,
+		forUserSub *model.UserSubscription,
+		forPayment *model.Payment,
 	) (string, error)
 }
 
-type InvoiceService_ struct {
-	client   *http.Client
-	hostname string
+type invoiceService struct {
+	client          *http.Client
+	hostname        string
+	invoiceDuration int
 }
 
 func NewInvoiceService() InvoiceService {
-	return &InvoiceService_{
+	return &invoiceService{
 		client:   &http.Client{},
 		hostname: "https://api.xendit.co/v2/invoices",
+		// default 24 hours
+		invoiceDuration: 86400,
 	}
 }
 
-func (is *InvoiceService_) BuildSuccessUrl() string {
+func (is *invoiceService) BuildSuccessUrl() string {
 	return os.Getenv("XENDIT_INVOICE_CALLBACK")
 }
 
-func (is *InvoiceService_) BuildFailureUrl() string {
+func (is *invoiceService) BuildFailureUrl() string {
 	return os.Getenv("XENDIT_INVOICE_CALLBACK")
 }
 
-func (is *InvoiceService_) GenerateInvoice(id uint,
-	amount float64,
-	desc string,
-	email string,
+func (is *invoiceService) generateInvoiceDesc(
+	forUser *entity.User,
+	forUserSub *model.UserSubscription,
+	forPayment *model.Payment,
+) string {
+	return fmt.Sprintf("Invoice for Breathe.io %s Tier, %d months", forUserSub.Subscription.Tier, forUserSub.Duration)
+}
+
+func (is *invoiceService) generateInvoiceItems(forUserSub *model.UserSubscription) []map[string]any {
+	items := []map[string]any{
+		{
+			"name":     fmt.Sprintf("Breathe.io %s Tier, %d months", forUserSub.Subscription.Tier, forUserSub.Duration),
+			"quantity": forUserSub.Duration,
+			"price":    float64(forUserSub.Duration) * forUserSub.Subscription.PricePerMonth,
+			"url":      fmt.Sprintf("/user-subscriptions/%d", forUserSub.ID),
+		},
+	}
+	return items
+}
+
+func (is *invoiceService) GenerateInvoice(
+	forUser *entity.User,
+	forUserSub *model.UserSubscription,
+	forPayment *model.Payment,
 ) (string, error) {
 	data := map[string]any{
-		"external_id": fmt.Sprintf("%d", id),
-		"amount":      amount,
-		"description": desc,
+		"external_id":      fmt.Sprintf("%d", forPayment.ID),
+		"amount":           forPayment.Amount,
+		"description":      is.generateInvoiceDesc(forUser, forUserSub, forPayment),
+		"invoice_duration": is.invoiceDuration,
 		"customer": map[string]any{
-			"email": email,
+			"email":         forUser.Email,
+			"mobile_number": forUser.PhoneNumber,
 		},
 		"success_redirect_url": is.BuildSuccessUrl(),
 		"failure_redirect_url": is.BuildFailureUrl(),
 		"payment_methods": []string{
 			"CREDIT_CARD", "BCA", "BNI", "BSI", "BRI", "MANDIRI", "PERMATA",
+			"OVO", "DANA", "SHOPEEPAY", "LINKAJA", "JENIUSPAY", "DD_BRI", "DD_BCA_KLIKPAY", "QRIS",
 		},
 		"currency": "IDR",
+		"locale":   "en",
+		"items":    is.generateInvoiceItems(forUserSub),
 	}
 	body, err := json.Marshal(&data)
 	if err != nil {
@@ -78,7 +108,7 @@ func (is *InvoiceService_) GenerateInvoice(id uint,
 		if err == nil {
 			fmt.Printf("%s\n", string(string(bytes)))
 		}
-		fmt.Printf("Here\n")
+		// fmt.Printf("Here\n")
 		return "", fmt.Errorf("xendit status code %d", resp.StatusCode)
 	}
 

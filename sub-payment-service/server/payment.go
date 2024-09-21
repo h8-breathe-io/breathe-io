@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -19,11 +20,14 @@ import (
 func NewPaymentServer(
 	db *gorm.DB,
 	emailNotifService service.EmailNotifService,
-	invoiceService service.InvoiceService) *PaymentServer {
+	invoiceService service.InvoiceService,
+	userService service.UserService,
+) *PaymentServer {
 	return &PaymentServer{
 		db:                db,
 		emailNotifService: emailNotifService,
 		invoiceService:    invoiceService,
+		userService:       userService,
 	}
 }
 
@@ -31,6 +35,7 @@ type PaymentServer struct {
 	db                *gorm.DB
 	emailNotifService service.EmailNotifService
 	invoiceService    service.InvoiceService
+	userService       service.UserService
 	pb.UnimplementedSubPaymentServer
 }
 
@@ -57,7 +62,7 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "payment not found")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Unknown, "internal server error: %s", err.Error())
+		return nil, status.Errorf(codes.Internal, "internal server error: %s", err.Error())
 	}
 
 	// check payment not updated yet
@@ -109,6 +114,18 @@ func (ps *PaymentServer) validateUserSubscriptionData(req *pb.CreateUserSubcript
 	return nil
 }
 
+func (ps *PaymentServer) rollbackUserSub(userSub *model.UserSubscription) {
+	payment := userSub.Payment
+	err := ps.db.Delete(&userSub).Error
+	if err != nil {
+		log.Printf("failed rolling back changes deleting user sub: %s", err.Error())
+	}
+	err = ps.db.Delete(&payment).Error
+	if err != nil {
+		log.Printf("failed rolling back changes deleting payment: %s", err.Error())
+	}
+}
+
 // CreateUserSubcription implements pb.SubPaymentServer.
 func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.CreateUserSubcriptionReq) (*pb.CreateUserSubcriptionResp, error) {
 	err := ps.validateUserSubscriptionData(req)
@@ -116,8 +133,11 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request: %s", err.Error())
 	}
 
-	// check user exists?
-	//TODO
+	// get user
+	user, err := ps.userService.GetUserByID(int(req.UserId))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get user id '%d': %s", req.UserId, err.Error())
+	}
 
 	// get subscribtion
 	var sub model.Subscription
@@ -125,7 +145,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "subscription tier '%s' does not exist", req.GetTier())
 	}
-	// TODO only allow business
+	// TODO only allow business tier
 
 	// generate payment and invoice
 	newPayment := &model.Payment{
@@ -134,8 +154,8 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 		Amount:         sub.PricePerMonth * float64(req.Duration),
 		Currency:       "IDR",
 		Status:         "pending",
-		// TODO generate invoice
-		Url: "test",
+		// filled  after creation
+		Url: "",
 	}
 
 	//create new model
@@ -147,9 +167,27 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 	}
 	err = ps.db.Save(newUserSub).Error
 	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "unknown: %s", err.Error())
+		return nil, status.Errorf(codes.Internal, "unknown: %s", err.Error())
 	}
 	newPayment = &newUserSub.Payment
+
+	// generate invoice
+	url, err := ps.invoiceService.GenerateInvoice(
+		user,
+		newUserSub,
+		newPayment,
+	)
+	if err != nil {
+		ps.rollbackUserSub(newUserSub)
+		return nil, status.Errorf(codes.Internal, "failed to generate invoice: %s", err.Error())
+	}
+	//update url
+	newPayment.Url = url
+	err = ps.db.Save(&newPayment).Error
+	if err != nil {
+		ps.rollbackUserSub(newUserSub)
+		return nil, status.Errorf(codes.Internal, "failed to update payment invoice: %s", err.Error())
+	}
 
 	return &pb.CreateUserSubcriptionResp{
 		Id:     int64(newUserSub.ID),
@@ -174,10 +212,5 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 
 // GetUserSubcriptions implements pb.SubPaymentServer.
 func (ps *PaymentServer) GetUserSubcriptions(context.Context, *pb.GetUserSubcriptionsReq) (*pb.GetUserSubcriptionsResp, error) {
-	panic("unimplemented")
-}
-
-// mustEmbedUnimplementedSubPaymentServer implements pb.SubPaymentServer.
-func (ps *PaymentServer) mustEmbedUnimplementedSubPaymentServer() {
 	panic("unimplemented")
 }
