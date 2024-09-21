@@ -31,7 +31,7 @@ func CreateDBInstance() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	err = db.AutoMigrate(&model.AirQuality{})
+	err = db.AutoMigrate(&model.AirQuality{}, &model.Location{})
 	if err != nil {
 		log.Fatal(err)
 	}

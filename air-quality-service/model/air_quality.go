@@ -4,7 +4,8 @@ import "time"
 
 type AirQuality struct {
 	ID         uint       `json:"id"`
-	LocationID int        `json:"location_id"`
+	LocationID int        `json:"location_id"`                           // Foreign key to Location
+	Location   Location   `json:"location" gorm:"foreignKey:LocationID"` // Relation to Location
 	AQI        int        `json:"aqi"`
 	CO         float64    `json:"co"`
 	NO         float64    `json:"no"`

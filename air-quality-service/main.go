@@ -3,52 +3,42 @@ package main
 import (
 	"air-quality-service/config"
 	"air-quality-service/handler"
+	pb "air-quality-service/pb/generated"
 	"air-quality-service/service"
-	"air-quality-service/util"
 	"fmt"
 	"log"
+	"net"
 	"os"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	db := config.CreateDBInstance()
 
-	e := echo.New()
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
-	e.HTTPErrorHandler = util.ErrorHandler
-
-	// jwt middleware
-	// config := echojwt.Config{
-	// 	NewClaimsFunc: func(c echo.Context) jwt.Claims {
-	// 		return new(auth.JwtAppClaims)
-	// 	},
-	// 	SigningKey: []byte(os.Getenv("JWT_KEY")),
-	// }
-	// jwtAuth := echojwt.WithConfig(config)
-
 	// instantiate dependencies
 	airQualityService := service.NewAirQualityService()
+	airQualityHandler := handler.NewAirQualityHandler(db, airQualityService)
 
-	// payments, for call backs by xendit
-	airQuality := handler.NewAirQualityHandler(db, airQualityService)
-	aqs := e.Group("/air-qualities")
-	//authorization commented, waiting for working
-	// aqs.Use(jwtAuth)
-	aqs.POST("", airQuality.FetchAirQualityData)
-	aqs.GET("", airQuality.GetAirQualities)
+	locationHandler := handler.NewLocationHandler(db)
+	grpcServer := grpc.NewServer()
 
-	// swagger docs
-	// e.GET("/swagger/*", echoSwagger.WrapHandler)
+	pb.RegisterAirQualityServiceServer(grpcServer, airQualityHandler)
+	pb.RegisterLocationServiceServer(grpcServer, locationHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "50051"
 	}
 
 	// start server
-	log.Fatal(e.Start(fmt.Sprintf(":%s", port)))
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	log.Printf("server listening at %s", listen.Addr().String())
+	if err := grpcServer.Serve(listen); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
