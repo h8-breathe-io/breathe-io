@@ -62,13 +62,13 @@ CREATE TABLE air_quality (
 -- Create Payments Table for storing payment transactions for Business Tier users
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
     payment_gateway VARCHAR(50) NOT NULL,  -- e.g., 'xendit'
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(10) NOT NULL,
     transaction_date TIMESTAMP, -- filled after payment made
-    status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')) NOT NULL
-    url TEXT NOT NULL, -- stores url to payment page
+    status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')) NOT NULL,
+    url TEXT NOT NULL -- stores url to payment page
 );
 
 -- Stores subscription tiers and their details
@@ -76,12 +76,12 @@ CREATE TABLE subscriptions (
     id SERIAL PRIMARY KEY,
     tier VARCHAR(50) NOT NULL UNIQUE, -- e.g business
     price_per_month DECIMAL(10,2) NOT NULL
-)
+);
 
 -- Stores user subscriptions 
 CREATE TABLE user_subscriptions (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
     subscription_id INT REFERENCES subscriptions(id) ON DELETE CASCADE,
     duration INT NOT NULL,
     end_date TIMESTAMP,
