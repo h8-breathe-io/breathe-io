@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"sub-payment-service/entity"
-	"sub-payment-service/model"
+	"subs-payment-service/entity"
+	"subs-payment-service/model"
 )
 
 type InvoiceService interface {

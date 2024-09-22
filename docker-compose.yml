@@ -1,0 +1,24 @@
+version: '3'
+services:
+  api_gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+    depends_on:
+      - subs_payment_service
+  
+  subs_payment_service:
+    build: ./subs-payment-service
+    container_name: subs-payment-service
+    expose:
+      - 50001
+    env_file:
+      - ./subs-payment-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    

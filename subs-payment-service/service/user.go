@@ -1,7 +1,7 @@
 package service
 
 import (
-	"sub-payment-service/entity"
+	"subs-payment-service/entity"
 	"time"
 )
 

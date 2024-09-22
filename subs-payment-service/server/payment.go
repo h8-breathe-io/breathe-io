@@ -8,12 +8,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sub-payment-service/model"
-	"sub-payment-service/pb"
-	"sub-payment-service/service"
+	"subs-payment-service/model"
+	"subs-payment-service/pb"
+	"subs-payment-service/service"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -44,6 +46,7 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 	// verify webhook token
 	verifToken := req.CallbackToken
 	if verifToken == "" || verifToken != os.Getenv("XENDIT_WEBHOOK_TOKEN") {
+		log.Printf("received xendit webhook token: %s", verifToken)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid webhook token")
 	}
 
@@ -70,9 +73,14 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 		return nil, status.Errorf(http.StatusBadRequest, "payment already updated")
 	}
 
+	var transDate time.Time
+	transDate, err = time.Parse("", req.PaidAt)
+	if err != nil {
+		transDate = time.Now()
+	}
+
 	// update payment
-	payment.PaymentGateway = req.PaymentMethod
-	payment.Amount = float64(req.PaidAmount)
+	payment.TransactionDate = &transDate
 	if req.Status == "PAID" {
 		payment.Status = "completed"
 	} else {
@@ -92,7 +100,18 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 	// 	}
 	// }
 
-	return &pb.CompletePaymentResp{}, nil
+	return &pb.CompletePaymentResp{
+		Payment: &pb.Payment{
+			Id:              int64(payment.ID),
+			UserId:          int64(payment.UserID),
+			PaymentGateway:  payment.PaymentGateway,
+			Amount:          float32(payment.Amount),
+			Currency:        payment.Currency,
+			TransactionDate: timestamppb.New(*payment.TransactionDate),
+			Status:          payment.Status,
+			Url:             payment.Url,
+		},
+	}, nil
 }
 
 func (ps *PaymentServer) validateUserSubscriptionData(req *pb.CreateUserSubcriptionReq) error {
