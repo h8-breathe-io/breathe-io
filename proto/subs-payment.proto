@@ -68,8 +68,17 @@ message CompletePaymentResp{
     Payment payment=1;
 }
 
+message GetPaymentByIDReq{
+    int64 payment_id=1;
+}
+
+message GetPaymentByIDResp{
+    Payment payment=1;
+}
+
 service SubPayment{
     rpc CreateUserSubcription(CreateUserSubcriptionReq) returns (CreateUserSubcriptionResp);
     rpc GetUserSubcriptions(GetUserSubcriptionsReq) returns (GetUserSubcriptionsResp);
     rpc CompletePayment(CompletePaymentReq) returns (CompletePaymentResp);
+    rpc GetPaymentByID(GetPaymentByIDReq) returns (GetPaymentByIDResp);
 }

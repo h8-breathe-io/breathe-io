@@ -6,6 +6,7 @@ services:
       - "8080:8080"
     environment:
       - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+      - EMAIL_NOTIF_URL=email-notif-service:50002
     depends_on:
       - subs_payment_service
   
@@ -18,7 +19,19 @@ services:
       - ./subs-payment-service/.env
     environment:
       - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  email_notif_service:
+    build: ./email-notif-service
+    container_name: email-notif-service
+    expose:
+      - 50002
+    env_file:
+      - ./email-notif-service/.env
+    environment:
+      - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+
 
     
