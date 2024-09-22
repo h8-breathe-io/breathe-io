@@ -91,14 +91,8 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 		return nil, status.Errorf(http.StatusInternalServerError, "internal server error: %s", err.Error())
 	}
 
-	// send email is successful
-	// get user
-	// if user := ps.GetUserForPayment(&payment); user != nil {
-	// 	if payment.Status == "Completed" {
-	// 		// TODO
-	// 		ps.emailNotifService.NotifyPaymentSucccess()
-	// 	}
-	// }
+	// notify email service
+	ps.emailNotifService.NotifyPaymentSucccess(int(payment.ID))
 
 	return &pb.CompletePaymentResp{
 		Payment: &pb.Payment{
@@ -232,4 +226,29 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 // GetUserSubcriptions implements pb.SubPaymentServer.
 func (ps *PaymentServer) GetUserSubcriptions(context.Context, *pb.GetUserSubcriptionsReq) (*pb.GetUserSubcriptionsResp, error) {
 	panic("unimplemented")
+}
+
+func (ps *PaymentServer) GetPaymentByID(c context.Context, req *pb.GetPaymentByIDReq) (*pb.GetPaymentByIDResp, error) {
+	if req.PaymentId <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "payment id must be a positive integer")
+	}
+
+	var payment model.Payment
+	err := ps.db.Where("id=?", req.PaymentId).First(&payment).Error
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "payment with id %d not found; %s", req.PaymentId, err.Error())
+	}
+
+	return &pb.GetPaymentByIDResp{
+		Payment: &pb.Payment{
+			Id:              int64(payment.ID),
+			UserId:          int64(payment.UserID),
+			PaymentGateway:  payment.PaymentGateway,
+			Amount:          float32(payment.Amount),
+			Currency:        payment.Currency,
+			TransactionDate: timestamppb.New(*payment.TransactionDate),
+			Status:          payment.Status,
+			Url:             payment.Url,
+		},
+	}, nil
 }

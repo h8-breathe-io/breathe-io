@@ -1,0 +1,15 @@
+syntax = "proto3";
+package sub_payment;
+option go_package = "/pb";
+
+message NotifyPaymentCompleteReq{
+    int64 payment_id=1;
+}
+message NotifyPaymentCompleteResp{
+    string status=1;
+    string email=2;
+}
+
+service EmailNotifService{
+    rpc NotifyPaymentComplete(NotifyPaymentCompleteReq) returns (NotifyPaymentCompleteResp);
+}
