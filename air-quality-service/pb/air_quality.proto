@@ -1,0 +1,44 @@
+syntax = "proto3";
+package air_quality_grpc;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/h8-breathe-io/breathe-io/air-quality-service/pb";
+
+service AirQualityService {
+  rpc GetAirQualities (GetAirQualitiesRequest) returns (GetAirQualitiesResponse) {}
+  rpc SaveAirQualities (SaveAirQualitiesRequest) returns (SaveAirQualitiesResponse) {}
+}
+
+message GetAirQualitiesRequest {
+  uint64 location_id = 1;
+}
+
+message GetAirQualitiesResponse {
+  repeated AirQuality air_qualities = 1;
+}
+
+message SaveAirQualitiesRequest {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message SaveAirQualitiesResponse {
+  bool success = 1;
+}
+
+message AirQuality {
+  uint64 id = 1;
+  int64 location_id = 2;
+  int64 aqi = 3;
+  double co = 4;
+  double no = 5;
+  double no2 = 6;
+  double o3 = 7;
+  double so2 = 8;
+  double pm25 = 9;
+  double pm10 = 10;
+  double nh3 = 11;
+  google.protobuf.Timestamp fetch_time = 12;
+}
+
