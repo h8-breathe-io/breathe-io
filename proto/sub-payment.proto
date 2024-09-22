@@ -61,6 +61,7 @@ message CompletePaymentReq{
     string payment_method=4;
     float paid_amount=5;
     string status=6;
+    string paid_at=7;
 }
 
 message CompletePaymentResp{

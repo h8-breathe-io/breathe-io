@@ -6,10 +6,10 @@ import (
 	"net"
 	"os"
 
-	"sub-payment-service/config"
-	pb "sub-payment-service/pb"
-	"sub-payment-service/server"
-	"sub-payment-service/service"
+	"subs-payment-service/config"
+	pb "subs-payment-service/pb"
+	"subs-payment-service/server"
+	"subs-payment-service/service"
 
 	// _ "api-gateway/docs"
 

@@ -19,6 +19,7 @@ import (
 
 func NewSubsPaymentClient() pb.SubPaymentClient {
 	addr := os.Getenv("SUBS_PAYMENT_SERVICE_URL")
+	log.Printf("subs-payment service url: %s", addr)
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -69,6 +70,14 @@ func (h *handler) HandlePaymentCallback(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
+	// verify webhook token
+	verifToken := c.Request().Header.Get("x-callback-token")
+	if verifToken == "" {
+		return util.NewAppError(http.StatusUnauthorized, "invalid webhook token", "")
+	}
+	// set token from header
+	req.CallbackToken = verifToken
+
 	res, err := h.subsPaymentCLient.CompletePayment(
 		context.TODO(),
 		&req,
@@ -91,6 +100,8 @@ func main() {
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+	// set error handler
+	e.HTTPErrorHandler = util.ErrorHandler
 
 	// TODO middleware to handle JWT token
 	authMiddleware := func(next echo.HandlerFunc) echo.HandlerFunc {

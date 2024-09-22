@@ -1,4 +1,4 @@
-module sub-payment-service
+module subs-payment-service
 
 go 1.22.4
 
