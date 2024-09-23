@@ -23,7 +23,7 @@ func (u *userService) GetUserByID(id int) (*entity.User, error) {
 	return &entity.User{
 		ID:          1,
 		Username:    "dummyuser",
-		Email:       "dummyuser@mail.com",
+		Email:       "razif.dev@gmail.com",
 		PhoneNumber: "12345",
 		Tier:        "free",
 		CreatedAt:   time.Now(),
