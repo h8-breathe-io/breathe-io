@@ -22,7 +22,7 @@ func (u *userService) GetUserByID(id int) (*entity.User, error) {
 	// return dummy user for now
 	return &entity.User{
 		ID:          1,
-		Username:    "dummyuser",
+		Username:    "Razif",
 		Email:       "razif.dev@gmail.com",
 		PhoneNumber: "12345",
 		Tier:        "free",
