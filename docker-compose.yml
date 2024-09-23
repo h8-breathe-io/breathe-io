@@ -7,8 +7,11 @@ services:
     environment:
       - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
       - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
     depends_on:
       - subs_payment_service
+      - email_notif_service
+      - user_service
   
   subs_payment_service:
     build: ./subs-payment-service
@@ -32,6 +35,20 @@ services:
       - ./email-notif-service/.env
     environment:
       - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+
+  user_service:
+    build: ./user-service
+    container_name: user-service
+    expose:
+      - 50003
+    env_file:
+      - ./user-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - PORT=50003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 
     

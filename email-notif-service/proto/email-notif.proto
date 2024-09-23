@@ -10,6 +10,15 @@ message NotifyPaymentCompleteResp{
     string email=2;
 }
 
+message NotifyRegisterReq{
+    int64 user_id=1;
+}
+message NotifyRegisterResp{
+    string status=1;
+    string email=2;
+}
+
 service EmailNotifService{
     rpc NotifyPaymentComplete(NotifyPaymentCompleteReq) returns (NotifyPaymentCompleteResp);
+    rpc NotifyRegister(NotifyRegisterReq) returns (NotifyRegisterResp);
 }

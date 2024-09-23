@@ -23,11 +23,15 @@ func NewEmailNotifServer(
 	paymentTmpl := template.Must(template.ParseFiles(
 		filepath.Join(constants.ROOT_TEMPLATE_PATH, "payment.html"),
 	))
+	registerTmpl := template.Must(template.ParseFiles(
+		filepath.Join(constants.ROOT_TEMPLATE_PATH, "register.html"),
+	))
 	return &EmailNotifServer{
 		paymentService: paymentService,
 		userService:    userService,
 		emailService:   emailService,
 		paymentTmpl:    paymentTmpl,
+		registerTmpl:   registerTmpl,
 	}
 }
 
@@ -36,6 +40,7 @@ type EmailNotifServer struct {
 	userService    service.UserService
 	emailService   service.EmailService
 	paymentTmpl    *template.Template
+	registerTmpl   *template.Template
 	pb.UnimplementedEmailNotifServiceServer
 }
 
@@ -88,6 +93,54 @@ func (es *EmailNotifServer) NotifyPaymentComplete(c context.Context, req *pb.Not
 	}
 
 	return &pb.NotifyPaymentCompleteResp{
+		Status: "OK",
+		Email:  user.Email,
+	}, nil
+}
+
+type RegisterEmailData struct {
+	Username string
+}
+
+func (es *EmailNotifServer) NotifyRegister(c context.Context, req *pb.NotifyRegisterReq) (*pb.NotifyRegisterResp, error) {
+
+	// get user
+	user, err := es.userService.GetUserByID(int(req.UserId))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to get user: %s", err.Error())
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+
+	// data for template
+	data := PaymentEmailData{
+		Username: user.Username,
+	}
+
+	// generate html for email
+	err = es.registerTmpl.Execute(buf, &data)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to generate email: %s", err.Error())
+	}
+
+	// create email req
+	emailReq := service.SendEmailRequest{
+		From: service.Address{Email: constants.SENDER_EMAIL, Name: "Breathe.io"},
+		To: []service.Address{
+			{Email: user.Email, Name: user.Username},
+		},
+		Subject:  "Welcome to Breathe.io",
+		Text:     buf.String(),
+		Html:     buf.String(),
+		Category: "Registration",
+	}
+
+	err = es.emailService.SendEmail(&emailReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.NotifyRegisterResp{
 		Status: "OK",
 		Email:  user.Email,
 	}, nil

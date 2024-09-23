@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Confirmation</title>
+    <title>Welcome to Breathe.io</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,6 +38,13 @@
             text-align: center;
             margin: 20px 0;
         }
+        .cta a {
+            padding: 10px 20px;
+            background-color: #0db5a5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
         .footer {
             text-align: center;
             font-size: 12px;
@@ -49,15 +56,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Payment Received!</h1>
+            <h1>Welcome to Breathe.io!</h1>
         </div>
         <div class="content">
             <h2>Hi {{.Username}},</h2>
-            <p>Thank you for your payment of <strong>IDR {{.Amount}}</strong> for your Breathe.io subscription.</p>
-            <p>Your subscription is now active, and you can enjoy all the premium features that help you monitor air quality and make better decisions.</p>
-            <p>If you have any questions or issues, don’t hesitate to reach out to us.</p>
+            <p>Thank you for signing up to Breathe.io! We’re excited to have you on board.</p>
+            <p>Our app helps you track air quality in real time, gives personalized health recommendations, and offers historical air data for better decision-making.</p>
+            <p>Get started today and take control of the air you breathe.</p>
             <div class="cta">
-                <a href="https://breathe.io/login" target="_blank">Access Your Account</a>
+                <a href="https://breathe.io/login" target="_blank">Log in to Your Account</a>
             </div>
         </div>
         <div class="footer">
