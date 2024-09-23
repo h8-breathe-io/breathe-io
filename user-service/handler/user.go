@@ -224,3 +224,27 @@ func (u *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest)
 		Tier:        user.Tier,
 	}, nil
 }
+
+func (u *UserHandler) IsValidToken(ctx context.Context, req *pb.IsValidTokenRequest) (*pb.IsValidTokenResponse, error) {
+	//validate requests
+	if req.Token == "" {
+		return nil, errors.New("token is required")
+	}
+
+	//validate token
+	key := os.Getenv("JWT_SECRET")
+	t, err := jwt.Parse(req.Token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(key), nil
+	})
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
+
+	if !t.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	return &pb.IsValidTokenResponse{
+		Valid: true,
+	}, nil
+}

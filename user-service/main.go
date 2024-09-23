@@ -17,13 +17,16 @@ func main() {
 
 	// instantiate dependencies
 	userHandler := handler.NewUserHandler(db)
+	businessFacilityHandler := handler.NewBusinessFacilitiesHandler(db)
+
 	grpcServer := grpc.NewServer()
 
 	pb.RegisterUserServer(grpcServer, userHandler)
+	pb.RegisterBusinessFacilitiesServer(grpcServer, businessFacilityHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "50051"
+		port = "50052"
 	}
 
 	// start server
