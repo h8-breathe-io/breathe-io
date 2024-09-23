@@ -101,6 +101,7 @@ func (u *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 		"email":    user.Email,
 		"tier":     user.Tier,
 		"username": user.Username,
+		"id":       user.ID,
 	})
 
 	s, err := t.SignedString([]byte(key))
