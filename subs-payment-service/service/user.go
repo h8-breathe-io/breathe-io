@@ -27,6 +27,7 @@ func NewUserClient() pb.UserClient {
 
 type UserService interface {
 	GetUserByID(id int) (*entity.User, error)
+	IsValidToken(token string) (*entity.User, error)
 }
 
 func NewUserService() UserService {
