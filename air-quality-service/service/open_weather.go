@@ -3,7 +3,9 @@ package service
 import (
 	"air-quality-service/entity"
 	"encoding/json"
+	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -33,6 +35,28 @@ func (a *AirQualityService) FetchAirQuality(lat, lon string) (*entity.AirQuality
 		SetQueryParam("lon", lon).
 		SetQueryParam("appid", a.APIKey).
 		Get(a.BaseUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var airQuality entity.AirQuality
+	err = json.Unmarshal(resp.Body(), &airQuality)
+	if err != nil {
+		return nil, err
+	}
+
+	return &airQuality, nil
+}
+
+func (a *AirQualityService) FetchAirQualityByRange(lat, lon string, start, end int64) (*entity.AirQuality, error) {
+	resp, err := a.Client.R().
+		SetQueryParam("lat", lat).
+		SetQueryParam("lon", lon).
+		SetQueryParam("start", strconv.FormatInt(start, 10)).
+		SetQueryParam("end", strconv.FormatInt(end, 10)).
+		SetQueryParam("appid", a.APIKey).
+		Get(fmt.Sprintf("%s/history", a.BaseUrl))
 
 	if err != nil {
 		return nil, err
