@@ -10,6 +10,16 @@ service User {
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
   rpc GetUser(GetUserRequest) returns (UserResponse);
   rpc DeleteUser(DeleteUserRequest) returns (UserResponse);
+  rpc IsValidToken(IsValidTokenRequest) returns (IsValidTokenResponse);
+}
+
+message IsValidTokenRequest {
+  string token = 1;
+}
+
+message IsValidTokenResponse {
+  bool valid = 1;
+  UserResponse user = 2;
 }
 
 message UpdateUserRequest {
