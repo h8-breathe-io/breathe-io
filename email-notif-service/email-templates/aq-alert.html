@@ -62,9 +62,9 @@
 
         <!-- Content Section -->
         <div class="content">
-            <h2>Hi {{user_firstname}},</h2>
+            <h2>Hi {{.Username}},</h2>
             <p>
-                We wanted to alert you that the air quality in your location, <strong>{{location}}</strong>, is currently rated as <strong>unhealthy</strong>. The current air quality index (AQI) is <strong>{{aqi_value}}</strong>, indicating elevated levels of pollution.
+                We wanted to alert you that the air quality in your location, <strong>{{.Location}}</strong>, is currently rated as <strong>unhealthy</strong>. The current air quality index (AQI) is <strong>{{.Aqi}}</strong>, indicating elevated levels of pollution.
             </p>
             <p>
                 Exposure to poor air quality can have health impacts, especially for individuals with respiratory conditions, children, and the elderly. Please take precautions to limit outdoor activities and ensure that your indoor air is well-ventilated.

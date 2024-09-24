@@ -28,6 +28,7 @@ func main() {
 		paymentService,
 		userService,
 		emailService,
+		service.NewAirQualityService(),
 	)
 
 	opts := []grpc.ServerOption{

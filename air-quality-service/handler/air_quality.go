@@ -282,3 +282,33 @@ func (ah *AirQualityHandler) SaveHistoricalAirQualities(ctx context.Context, req
 
 	return res, nil
 }
+
+func (ah *AirQualityHandler) GetAirQualityByID(c context.Context, req *pb.GetAirQualityByIDReq) (*pb.GetAirQualityByIDResp, error) {
+	// validate location id
+	if req.Id == 0 {
+		return nil, errors.New("aiur quality id is required")
+	}
+
+	var airQuality model.AirQuality
+	err := ah.db.Where("id = ?", req.Id).First(&airQuality).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get air qualitiy id %d", req.Id)
+	}
+
+	fetchedTime := airQuality.FetchTime.Format("2006-01-02 15:04:05")
+	return &pb.GetAirQualityByIDResp{
+		AirQuality: &pb.AirQuality{
+			Id:         uint64(airQuality.ID),
+			LocationId: int64(airQuality.LocationID),
+			Aqi:        int64(airQuality.AQI),
+			Co:         airQuality.CO,
+			No:         airQuality.NO,
+			No2:        airQuality.NO2,
+			O3:         airQuality.O3,
+			So2:        airQuality.SO2,
+			Pm25:       airQuality.PM25,
+			Pm10:       airQuality.PM10,
+			Nh3:        airQuality.NH3,
+			FetchTime:  fetchedTime,
+		}}, nil
+}

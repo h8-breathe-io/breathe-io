@@ -7,6 +7,7 @@ service AirQualityService {
   rpc GetAirQualities (GetAirQualitiesRequest) returns (GetAirQualitiesResponse) {}
   rpc SaveAirQualities (SaveAirQualitiesRequest) returns (SaveAirQualitiesResponse) {}
   rpc SaveHistoricalAirQualities(SaveHistoricalAirQualitiesRequest) returns (SaveAirQualitiesResponse) {}
+  rpc GetAirQualityByID (GetAirQualityByIDReq) returns (GetAirQualityByIDResp){}
 }
 
 message GetAirQualitiesRequest {
@@ -50,3 +51,10 @@ message AirQuality {
   string fetch_time = 12;
 }
 
+message GetAirQualityByIDReq{
+  int64 id=1;
+}
+
+message GetAirQualityByIDResp{
+  AirQuality air_quality=1;
+}
