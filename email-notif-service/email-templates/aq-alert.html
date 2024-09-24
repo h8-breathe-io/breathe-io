@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Alert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ff4c4c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            color: #555555;
+        }
+        .content h2 {
+            color: #ff4c4c;
+        }
+        .cta {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .cta a {
+            padding: 10px 20px;
+            background-color: #ff4c4c;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #555555;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Air Quality Warning: {{location}}</h1>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content">
+            <h2>Hi {{user_firstname}},</h2>
+            <p>
+                We wanted to alert you that the air quality in your location, <strong>{{location}}</strong>, is currently rated as <strong>unhealthy</strong>. The current air quality index (AQI) is <strong>{{aqi_value}}</strong>, indicating elevated levels of pollution.
+            </p>
+            <p>
+                Exposure to poor air quality can have health impacts, especially for individuals with respiratory conditions, children, and the elderly. Please take precautions to limit outdoor activities and ensure that your indoor air is well-ventilated.
+            </p>
+            <h3>Our Health Recommendations:</h3>
+            <ul>
+                <li>Stay indoors as much as possible.</li>
+                <li>Use air purifiers if available.</li>
+                <li>Wear a mask if you must go outside.</li>
+                <li>Monitor real-time air quality updates in your Breathe.io app.</li>
+            </ul>
+
+            <!-- Call to Action Button -->
+            <div class="cta">
+                <a href="https://breathe.io/dashboard" target="_blank">Check Air Quality in Real Time</a>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>Stay safe and breathe better with Breathe.io!</p>
+            <p>Need help? <a href="https://breathe.io/support" target="_blank">Contact Support</a></p>
+        </div>
+    </div>
+</body>
+</html>

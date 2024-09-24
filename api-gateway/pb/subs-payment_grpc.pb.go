@@ -21,6 +21,7 @@ type SubPaymentClient interface {
 	CreateUserSubcription(ctx context.Context, in *CreateUserSubcriptionReq, opts ...grpc.CallOption) (*CreateUserSubcriptionResp, error)
 	GetUserSubcriptions(ctx context.Context, in *GetUserSubcriptionsReq, opts ...grpc.CallOption) (*GetUserSubcriptionsResp, error)
 	CompletePayment(ctx context.Context, in *CompletePaymentReq, opts ...grpc.CallOption) (*CompletePaymentResp, error)
+	GetPaymentByID(ctx context.Context, in *GetPaymentByIDReq, opts ...grpc.CallOption) (*GetPaymentByIDResp, error)
 }
 
 type subPaymentClient struct {
@@ -58,6 +59,15 @@ func (c *subPaymentClient) CompletePayment(ctx context.Context, in *CompletePaym
 	return out, nil
 }
 
+func (c *subPaymentClient) GetPaymentByID(ctx context.Context, in *GetPaymentByIDReq, opts ...grpc.CallOption) (*GetPaymentByIDResp, error) {
+	out := new(GetPaymentByIDResp)
+	err := c.cc.Invoke(ctx, "/sub_payment.SubPayment/GetPaymentByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubPaymentServer is the server API for SubPayment service.
 // All implementations must embed UnimplementedSubPaymentServer
 // for forward compatibility
@@ -65,6 +75,7 @@ type SubPaymentServer interface {
 	CreateUserSubcription(context.Context, *CreateUserSubcriptionReq) (*CreateUserSubcriptionResp, error)
 	GetUserSubcriptions(context.Context, *GetUserSubcriptionsReq) (*GetUserSubcriptionsResp, error)
 	CompletePayment(context.Context, *CompletePaymentReq) (*CompletePaymentResp, error)
+	GetPaymentByID(context.Context, *GetPaymentByIDReq) (*GetPaymentByIDResp, error)
 	mustEmbedUnimplementedSubPaymentServer()
 }
 
@@ -80,6 +91,9 @@ func (UnimplementedSubPaymentServer) GetUserSubcriptions(context.Context, *GetUs
 }
 func (UnimplementedSubPaymentServer) CompletePayment(context.Context, *CompletePaymentReq) (*CompletePaymentResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompletePayment not implemented")
+}
+func (UnimplementedSubPaymentServer) GetPaymentByID(context.Context, *GetPaymentByIDReq) (*GetPaymentByIDResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPaymentByID not implemented")
 }
 func (UnimplementedSubPaymentServer) mustEmbedUnimplementedSubPaymentServer() {}
 
@@ -148,6 +162,24 @@ func _SubPayment_CompletePayment_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SubPayment_GetPaymentByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPaymentByIDReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubPaymentServer).GetPaymentByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sub_payment.SubPayment/GetPaymentByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubPaymentServer).GetPaymentByID(ctx, req.(*GetPaymentByIDReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SubPayment_ServiceDesc is the grpc.ServiceDesc for SubPayment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -167,7 +199,11 @@ var SubPayment_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CompletePayment",
 			Handler:    _SubPayment_CompletePayment_Handler,
 		},
+		{
+			MethodName: "GetPaymentByID",
+			Handler:    _SubPayment_GetPaymentByID_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/sub-payment.proto",
+	Metadata: "subs-payment.proto",
 }

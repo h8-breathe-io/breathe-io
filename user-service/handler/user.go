@@ -97,6 +97,7 @@ func (u *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	}
 
 	key := os.Getenv("JWT_SECRET")
+
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":    user.Email,
 		"tier":     user.Tier,

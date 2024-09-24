@@ -31,8 +31,23 @@ func NewSubsPaymentClient() pb.SubPaymentClient {
 	return client
 }
 
+func NewUserClient() pb.UserClient {
+	addr := os.Getenv("USER_SERVICE_URL")
+	log.Printf("user service url: %s", addr)
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := pb.NewUserClient(conn)
+
+	return client
+}
+
 type handler struct {
 	subsPaymentCLient pb.SubPaymentClient
+	userClient        pb.UserClient
 }
 
 func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
@@ -50,7 +65,6 @@ func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
 	// }
 	// for now hardcode
 	req.UserId = 1
-
 	res, err := h.subsPaymentCLient.CreateUserSubcription(
 		context.TODO(),
 		&req,
@@ -89,11 +103,50 @@ func (h *handler) HandlePaymentCallback(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func (h *handler) HandleRegister(c echo.Context) error {
+	var req pb.RegisterRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	res, err := h.userClient.Register(
+		context.TODO(),
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+
+}
+
+func (h *handler) HandleLogin(c echo.Context) error {
+	var req pb.LoginRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	res, err := h.userClient.Login(
+		context.TODO(),
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+
+}
+
 func main() {
 	godotenv.Load()
 
 	handler := handler{
 		subsPaymentCLient: NewSubsPaymentClient(),
+		userClient:        NewUserClient(),
 	}
 
 	e := echo.New()
@@ -124,6 +177,11 @@ func main() {
 	// callback for xendit
 	// don't need auth since it uses xendit token, will be authenticated in service
 	e.POST("/payment-callback", handler.HandlePaymentCallback)
+
+	// user
+	users := e.Group("/users")
+	users.POST("/register", handler.HandleRegister)
+	users.POST("/login", handler.HandleLogin)
 
 	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT"))))
 }

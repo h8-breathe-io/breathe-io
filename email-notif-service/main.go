@@ -12,19 +12,22 @@ import (
 
 	// _ "api-gateway/docs"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 )
 
 func main() {
-
+	godotenv.Load()
 	// instantiate services
 	paymentService := service.NewSubsPaymentService()
 	userService := service.NewUserService()
+	emailService := service.NewEmailService(os.Getenv("MAIL_API_URL"))
 
 	// email notif grpc server handler
 	emailNotifServer := server.NewEmailNotifServer(
 		paymentService,
 		userService,
+		emailService,
 	)
 
 	opts := []grpc.ServerOption{

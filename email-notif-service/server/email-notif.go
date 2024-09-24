@@ -1,15 +1,14 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"email-notif-service/constants"
 	"email-notif-service/pb"
 	"email-notif-service/service"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"strings"
+	"html/template"
+	"path/filepath"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,52 +17,131 @@ import (
 func NewEmailNotifServer(
 	paymentService service.SubsPaymentService,
 	userService service.UserService,
+	emailService service.EmailService,
 ) *EmailNotifServer {
+	// load templates
+	paymentTmpl := template.Must(template.ParseFiles(
+		filepath.Join(constants.ROOT_TEMPLATE_PATH, "payment.html"),
+	))
+	registerTmpl := template.Must(template.ParseFiles(
+		filepath.Join(constants.ROOT_TEMPLATE_PATH, "register.html"),
+	))
 	return &EmailNotifServer{
 		paymentService: paymentService,
 		userService:    userService,
+		emailService:   emailService,
+		paymentTmpl:    paymentTmpl,
+		registerTmpl:   registerTmpl,
 	}
 }
 
 type EmailNotifServer struct {
 	paymentService service.SubsPaymentService
 	userService    service.UserService
+	emailService   service.EmailService
+	paymentTmpl    *template.Template
+	registerTmpl   *template.Template
 	pb.UnimplementedEmailNotifServiceServer
 }
 
+type PaymentEmailData struct {
+	Username string
+	Amount   string
+}
+
 func (es *EmailNotifServer) NotifyPaymentComplete(c context.Context, req *pb.NotifyPaymentCompleteReq) (*pb.NotifyPaymentCompleteResp, error) {
-	// TODO
-	log.Printf("received notify payment complete request")
-	url := "https://sandbox.api.mailtrap.io/api/send/3155742"
-	method := "POST"
-	payload := strings.NewReader(`{"from":{"email":"hello@example.com","name":"Mailtrap Test"},"to":[{"email":"razif.dev@gmail.com"}],"subject":"You are awesome!","text":"Congrats for sending test email with Mailtrap!","category":"Integration Test"}`)
-
-	client := &http.Client{}
-	httpreq, err := http.NewRequest(method, url, payload)
+	// get payment
+	payment, err := es.paymentService.GetPaymentByID(int(req.PaymentId))
 	if err != nil {
-		fmt.Println(err)
-		return nil, status.Errorf(codes.Internal, "error calling mail api: %s", err.Error())
+		return nil, status.Errorf(codes.NotFound, "failed to get payment: %s", err.Error())
 	}
-	httpreq.Header.Add("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("MAILTRAP_TOKEN")))
-	httpreq.Header.Add("Content-Type", "application/json")
-
-	res, err := client.Do(httpreq)
-
+	// get user
+	user, err := es.userService.GetUserByID(int(payment.UserId))
 	if err != nil {
-		fmt.Println(err)
-		return nil, status.Errorf(codes.Internal, "error calling mail api: %s", err.Error())
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return nil, status.Errorf(codes.Internal, "error calling mail api: %s", err.Error())
+		return nil, status.Errorf(codes.NotFound, "failed to get user: %s", err.Error())
 	}
 
-	fmt.Println(string(body))
+	buf := bytes.NewBuffer([]byte{})
+
+	// data for template
+	data := PaymentEmailData{
+		Username: user.Username,
+		Amount:   fmt.Sprintf("%.0f", payment.Amount),
+	}
+
+	// generate html for email
+	err = es.paymentTmpl.Execute(buf, &data)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to generate email: %s", err.Error())
+	}
+
+	// create email req
+	emailReq := service.SendEmailRequest{
+		From: service.Address{Email: constants.SENDER_EMAIL, Name: "Breathe.io"},
+		To: []service.Address{
+			{Email: user.Email, Name: user.Username},
+		},
+		Subject:  "Payment Completed - Breathe.io",
+		Text:     buf.String(),
+		Html:     buf.String(),
+		Category: "Payment",
+	}
+
+	err = es.emailService.SendEmail(&emailReq)
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.NotifyPaymentCompleteResp{
 		Status: "OK",
-		Email:  "razif.dev@gmail.com",
+		Email:  user.Email,
+	}, nil
+}
+
+type RegisterEmailData struct {
+	Username string
+}
+
+func (es *EmailNotifServer) NotifyRegister(c context.Context, req *pb.NotifyRegisterReq) (*pb.NotifyRegisterResp, error) {
+
+	// get user
+	user, err := es.userService.GetUserByID(int(req.UserId))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to get user: %s", err.Error())
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+
+	// data for template
+	data := PaymentEmailData{
+		Username: user.Username,
+	}
+
+	// generate html for email
+	err = es.registerTmpl.Execute(buf, &data)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to generate email: %s", err.Error())
+	}
+
+	// create email req
+	emailReq := service.SendEmailRequest{
+		From: service.Address{Email: constants.SENDER_EMAIL, Name: "Breathe.io"},
+		To: []service.Address{
+			{Email: user.Email, Name: user.Username},
+		},
+		Subject:  "Welcome to Breathe.io",
+		Text:     buf.String(),
+		Html:     buf.String(),
+		Category: "Registration",
+	}
+
+	err = es.emailService.SendEmail(&emailReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.NotifyRegisterResp{
+		Status: "OK",
+		Email:  user.Email,
 	}, nil
 }
