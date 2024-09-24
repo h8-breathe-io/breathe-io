@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"user-service/model"
 	pb "user-service/pb/generated"
@@ -238,17 +239,17 @@ func (u *UserHandler) IsValidToken(ctx context.Context, req *pb.IsValidTokenRequ
 		return []byte(key), nil
 	})
 	if err != nil {
-		return nil, errors.New("invalid token")
+		return nil, fmt.Errorf("invalid token '%s',", key)
 	}
 
 	if !t.Valid {
-		return nil, errors.New("invalid token")
+		return nil, fmt.Errorf("invalid token '%v',", t)
 	}
 
 	var user model.User
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, errors.New("invalid token")
+		return nil, errors.New("invalid token, invalid claims")
 	}
 
 	err = u.db.Where("email = ?", claims["email"]).First(&user).Error

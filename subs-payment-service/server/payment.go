@@ -11,6 +11,7 @@ import (
 	"subs-payment-service/model"
 	"subs-payment-service/pb"
 	"subs-payment-service/service"
+	"subs-payment-service/util"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -115,7 +116,7 @@ func (ps *PaymentServer) validateUserSubscriptionData(req *pb.CreateUserSubcript
 	}
 
 	// Check if Tier is provided and valid (non-empty and meaningful)
-	if strings.TrimSpace(req.Tier) == "" {
+	if strings.TrimSpace(req.Tier) == "" && strings.TrimSpace(req.Tier) == "business" {
 		return errors.New("tier cannot be empty")
 	}
 
@@ -146,11 +147,16 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request: %s", err.Error())
 	}
 
-	// get user
-	user, err := ps.userService.GetUserByID(int(req.UserId))
+	// validate token and get user
+	user, err := util.ValidateAndGetUser(c, ps.userService)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get user id '%d': %s", req.UserId, err.Error())
+		return nil, status.Errorf(codes.Internal, "invalid token '%d': %s", req.UserId, err.Error())
 	}
+	// get user
+	// user, err := ps.userService.GetUserByID(int(req.UserId))
+	// if err != nil {
+	// 	return nil, status.Errorf(codes.Internal, "failed to get user id '%d': %s", req.UserId, err.Error())
+	// }
 
 	// get subscribtion
 	var sub model.Subscription

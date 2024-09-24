@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 
 	pb "api-gateway/pb"
 	"api-gateway/util"
@@ -50,6 +52,28 @@ type handler struct {
 	userClient        pb.UserClient
 }
 
+func (h *handler) createContext(c echo.Context) context.Context {
+	//get token from header
+
+	authHeader := c.Request().Header.Get("Authorization")
+
+	// Check if the header is in the correct format
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		log.Print("No token found, returning empty context")
+		// if not return emtpty context
+		return context.TODO()
+	}
+
+	// Extract the token part from the header (after "Bearer ")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	log.Printf("Token found '%s', attaching to context", token)
+	// attach token to context
+	md := metadata.Pairs("auth_token", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	return ctx
+}
+
 func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
 	// pb definitions have json annotations, can use it directly
 	var req pb.CreateUserSubcriptionReq
@@ -58,15 +82,11 @@ func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	// TODO get user_id from context
-	// userId, ok := c.Get("user_id").(string)
-	// if !ok {
-	// 	return util.NewAppError(http.StatusInternalServerError, "internal server error", "user id not set in context")
-	// }
-	// for now hardcode
+	ctx := h.createContext(c)
+	// forward
 	req.UserId = 1
 	res, err := h.subsPaymentCLient.CreateUserSubcription(
-		context.TODO(),
+		ctx,
 		&req,
 	)
 	if err != nil {

@@ -23,8 +23,11 @@ services:
     environment:
       - DB_HOST=host.docker.internal
       - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - user_service
 
   email_notif_service:
     build: ./email-notif-service
