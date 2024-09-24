@@ -12,11 +12,13 @@ import (
 type BusinessFacilityHandler struct {
 	pb.UnimplementedBusinessFacilitiesServer
 	db *gorm.DB
+	ls pb.LocationServiceClient
 }
 
-func NewBusinessFacilitiesHandler(db *gorm.DB) *BusinessFacilityHandler {
+func NewBusinessFacilitiesHandler(db *gorm.DB, ls pb.LocationServiceClient) *BusinessFacilityHandler {
 	return &BusinessFacilityHandler{
 		db: db,
+		ls: ls,
 	}
 }
 
@@ -35,7 +37,7 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 	}
 
 	if req.LocationId == 0 {
-		return nil, errors.New("password is required")
+		return nil, errors.New("location id is required")
 	}
 
 	// check if user id valid
@@ -47,19 +49,17 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 	}
 
 	//check if location id valid
-	//need location service
-	// var location model.Location
-	// err = bf.db.Where("id = ?", req.LocationId).First(&location).Error
-	// if err != nil {
-	// 	return nil, errors.New("location not found")
-	// }
+	location, err := bf.ls.GetLocation(ctx, &pb.GetLocationRequest{LocationId: req.LocationId})
+	if err != nil {
+		return nil, errors.New("location not found")
+	}
 
 	// create new BusinessFacility
 	businessFacility := model.BusinessFacility{
 		UserID:        req.UserId,
 		CompanyType:   req.CompanyType,
 		TotalEmission: req.TotalEmission,
-		LocationID:    req.LocationId,
+		LocationID:    location.LocationId,
 	}
 
 	err = bf.db.Create(&businessFacility).Error
@@ -68,6 +68,7 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 	}
 
 	return &pb.BFResponse{
+		Id:            uint64(businessFacility.ID),
 		UserId:        businessFacility.UserID,
 		CompanyType:   businessFacility.CompanyType,
 		TotalEmission: businessFacility.TotalEmission,
@@ -102,6 +103,7 @@ func (bf *BusinessFacilityHandler) GetBusinessFacilities(ctx context.Context, re
 
 	for _, businessFacility := range businessFacilities {
 		res.BusinessFacilities = append(res.BusinessFacilities, &pb.BFResponse{
+			Id:            uint64(businessFacility.ID),
 			UserId:        businessFacility.UserID,
 			CompanyType:   businessFacility.CompanyType,
 			TotalEmission: businessFacility.TotalEmission,
@@ -126,6 +128,7 @@ func (bf *BusinessFacilityHandler) GetBusinessFacility(ctx context.Context, req 
 	}
 
 	return &pb.BFResponse{
+		Id:            uint64(businessFacility.ID),
 		UserId:        businessFacility.UserID,
 		CompanyType:   businessFacility.CompanyType,
 		TotalEmission: businessFacility.TotalEmission,
@@ -169,12 +172,11 @@ func (bf *BusinessFacilityHandler) UpdateBusinessFacility(ctx context.Context, r
 	}
 
 	//check if location id valid
-	//need location service
-	// var location model.Location
-	// err = bf.db.Where("id = ?", req.LocationId).First(&location).Error
-	// if err != nil {
-	// 	return nil, errors.New("location not found")
-	// }
+	//check if location id valid
+	_, err = bf.ls.GetLocation(ctx, &pb.GetLocationRequest{LocationId: req.LocationId})
+	if err != nil {
+		return nil, errors.New("location not found")
+	}
 
 	updateBusinessFacility := model.BusinessFacility{
 		UserID:        req.UserId,
@@ -189,6 +191,7 @@ func (bf *BusinessFacilityHandler) UpdateBusinessFacility(ctx context.Context, r
 	}
 
 	return &pb.BFResponse{
+		Id:            uint64(req.Id),
 		UserId:        updateBusinessFacility.UserID,
 		CompanyType:   updateBusinessFacility.CompanyType,
 		TotalEmission: updateBusinessFacility.TotalEmission,
@@ -214,6 +217,7 @@ func (bf *BusinessFacilityHandler) DeleteBusinessFacility(ctx context.Context, r
 	}
 
 	return &pb.BFResponse{
+		Id:            uint64(businessFacility.ID),
 		UserId:        businessFacility.UserID,
 		CompanyType:   businessFacility.CompanyType,
 		TotalEmission: businessFacility.TotalEmission,

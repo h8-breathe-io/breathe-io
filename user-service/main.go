@@ -10,14 +10,24 @@ import (
 	pb "user-service/pb/generated"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
 	db := config.CreateDBInstance()
 
+	//make connection to location grpc server
+	locationAddr := os.Getenv("LOCATION_GRPC_ADDR")
+	locationConn, err := grpc.NewClient(locationAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to location service: %v", err)
+	}
+	defer locationConn.Close()
+	locationServiceClient := pb.NewLocationServiceClient(locationConn)
+
 	// instantiate dependencies
 	userHandler := handler.NewUserHandler(db)
-	businessFacilityHandler := handler.NewBusinessFacilitiesHandler(db)
+	businessFacilityHandler := handler.NewBusinessFacilitiesHandler(db, locationServiceClient)
 
 	grpcServer := grpc.NewServer()
 

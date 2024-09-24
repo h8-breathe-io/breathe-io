@@ -19,6 +19,7 @@ message IsValidTokenRequest {
 
 message IsValidTokenResponse {
   bool valid = 1;
+  UserResponse user = 2;
 }
 
 message UpdateUserRequest {

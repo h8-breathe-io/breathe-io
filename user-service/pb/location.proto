@@ -1,0 +1,46 @@
+syntax = "proto3";
+package air_quality_grpc;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/h8-breathe-io/breathe-io/air-quality-service/pb";
+
+service LocationService {
+  rpc AddLocation (AddLocationRequest) returns (LocationResponse) {}
+  rpc GetLocations (google.protobuf.Empty) returns (GetLocationsResponse) {}
+  rpc GetLocation (GetLocationRequest) returns (LocationResponse) {}
+  rpc UpdateLocation (UpdateLocationRequest) returns (LocationResponse) {}
+  rpc DeleteLocation (DeleteLocationRequest) returns (LocationResponse) {}
+}
+
+message AddLocationRequest {
+  string locationName = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message GetLocationRequest {
+    uint64 locationId = 1;
+}
+
+message UpdateLocationRequest {
+    uint64 locationId = 1;
+    string locationName = 2;
+    double latitude = 3;
+    double longitude = 4;
+}
+
+message DeleteLocationRequest {
+    uint64 locationId = 1;
+}
+
+message LocationResponse{
+    uint64 locationId = 1;
+    string locationName = 2;
+    double latitude = 3;
+    double longitude = 4;
+}
+
+message GetLocationsResponse {
+    repeated LocationResponse locations = 1;
+}

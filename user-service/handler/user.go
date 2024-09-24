@@ -244,7 +244,26 @@ func (u *UserHandler) IsValidToken(ctx context.Context, req *pb.IsValidTokenRequ
 		return nil, errors.New("invalid token")
 	}
 
-	return &pb.IsValidTokenResponse{
+	var user model.User
+	claims, ok := t.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("invalid token")
+	}
+
+	err = u.db.Where("email = ?", claims["email"]).First(&user).Error
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	res := &pb.IsValidTokenResponse{
 		Valid: true,
-	}, nil
+		User: &pb.UserResponse{
+			Username:    user.Username,
+			Email:       user.Email,
+			Phonenumber: user.Phonenumber,
+			Tier:        user.Tier,
+		},
+	}
+
+	return res, nil
 }

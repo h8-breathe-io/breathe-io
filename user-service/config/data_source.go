@@ -31,7 +31,7 @@ func CreateDBInstance() *gorm.DB {
 		log.Fatal(err)
 	}
 
-	err = db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(&model.User{}, &model.BusinessFacility{})
 	if err != nil {
 		log.Fatal(err)
 	}
