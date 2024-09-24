@@ -263,6 +263,7 @@ func (u *UserHandler) IsValidToken(ctx context.Context, req *pb.IsValidTokenRequ
 			Email:       user.Email,
 			Phonenumber: user.Phonenumber,
 			Tier:        user.Tier,
+			Id:          int64(user.ID),
 		},
 	}
 

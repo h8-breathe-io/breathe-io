@@ -57,3 +57,20 @@ func (u *userService) GetUserByID(id int) (*entity.User, error) {
 		Tier:        res.Tier,
 	}, nil
 }
+
+func (u *userService) IsValidToken(token string) (*entity.User, error) {
+	res, err := u.userClient.IsValidToken(context.TODO(), &pb.IsValidTokenRequest{
+		Token: token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.User{
+		ID:          int(res.User.Id),
+		Username:    res.User.Username,
+		Email:       res.User.Email,
+		PhoneNumber: res.User.Phonenumber,
+		Tier:        res.User.Tier,
+	}, nil
+}
