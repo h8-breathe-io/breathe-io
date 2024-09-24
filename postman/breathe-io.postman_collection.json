@@ -12,6 +12,16 @@
 				{
 					"name": "user-subscriptions",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -48,7 +58,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": \"579c8d61f23fa4ca35e52da4\",\n    \"external_id\": \"14\",\n    \"user_id\": \"5781d19b2e2385880609791c\",\n    \"is_high\": true,\n    \"payment_method\": \"BANK_TRANSFER\",\n    \"status\": \"PAID\",\n    \"merchant_name\": \"Xendit\",\n    \"amount\": 50000,\n    \"paid_amount\": 50000,\n    \"bank_code\": \"PERMATA\",\n    \"paid_at\": \"2016-10-12T08:15:03.404Z\",\n    \"payer_email\": \"wildan@xendit.co\",\n    \"description\": \"This is a description\",\n    \"adjusted_received_amount\": 47500,\n    \"fees_paid_amount\": 0,\n    \"updated\": \"2016-10-10T08:15:03.404Z\",\n    \"created\": \"2016-10-10T08:15:03.404Z\",\n    \"currency\": \"IDR\",\n    \"payment_channel\": \"PERMATA\",\n    \"payment_destination\": \"888888888888\"\n}",
+							"raw": "{\n    \"id\": \"579c8d61f23fa4ca35e52da4\",\n    \"external_id\": \"17\",\n    \"user_id\": \"5781d19b2e2385880609791c\",\n    \"is_high\": true,\n    \"payment_method\": \"BANK_TRANSFER\",\n    \"status\": \"PAID\",\n    \"merchant_name\": \"Xendit\",\n    \"amount\": 50000,\n    \"paid_amount\": 50000,\n    \"bank_code\": \"PERMATA\",\n    \"paid_at\": \"2016-10-12T08:15:03.404Z\",\n    \"payer_email\": \"wildan@xendit.co\",\n    \"description\": \"This is a description\",\n    \"adjusted_received_amount\": 47500,\n    \"fees_paid_amount\": 0,\n    \"updated\": \"2016-10-10T08:15:03.404Z\",\n    \"created\": \"2016-10-10T08:15:03.404Z\",\n    \"currency\": \"IDR\",\n    \"payment_channel\": \"PERMATA\",\n    \"payment_destination\": \"888888888888\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -91,6 +101,209 @@
 							""
 						]
 					}
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-callback-token",
+								"value": "{{xendit-callback-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Razif\",\n    \"email\": \"razif.dev@gmail.com\",\n    \"phonenumber\" : \"987654321\",\n    \"Password\" : \"pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-callback-token",
+								"value": "{{xendit-callback-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"razif.dev@gmail.com\",\n    \"Password\" : \"pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "air-qualities",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "business-facilities",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"1"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
