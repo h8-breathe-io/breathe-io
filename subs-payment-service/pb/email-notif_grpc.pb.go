@@ -19,6 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EmailNotifServiceClient interface {
 	NotifyPaymentComplete(ctx context.Context, in *NotifyPaymentCompleteReq, opts ...grpc.CallOption) (*NotifyPaymentCompleteResp, error)
+	NotifyRegister(ctx context.Context, in *NotifyRegisterReq, opts ...grpc.CallOption) (*NotifyRegisterResp, error)
+	NotifyAirQuality(ctx context.Context, in *NotifyAirQualityReq, opts ...grpc.CallOption) (*NotifyAirQualityResp, error)
 }
 
 type emailNotifServiceClient struct {
@@ -38,11 +40,31 @@ func (c *emailNotifServiceClient) NotifyPaymentComplete(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *emailNotifServiceClient) NotifyRegister(ctx context.Context, in *NotifyRegisterReq, opts ...grpc.CallOption) (*NotifyRegisterResp, error) {
+	out := new(NotifyRegisterResp)
+	err := c.cc.Invoke(ctx, "/sub_payment.EmailNotifService/NotifyRegister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *emailNotifServiceClient) NotifyAirQuality(ctx context.Context, in *NotifyAirQualityReq, opts ...grpc.CallOption) (*NotifyAirQualityResp, error) {
+	out := new(NotifyAirQualityResp)
+	err := c.cc.Invoke(ctx, "/sub_payment.EmailNotifService/NotifyAirQuality", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EmailNotifServiceServer is the server API for EmailNotifService service.
 // All implementations must embed UnimplementedEmailNotifServiceServer
 // for forward compatibility
 type EmailNotifServiceServer interface {
 	NotifyPaymentComplete(context.Context, *NotifyPaymentCompleteReq) (*NotifyPaymentCompleteResp, error)
+	NotifyRegister(context.Context, *NotifyRegisterReq) (*NotifyRegisterResp, error)
+	NotifyAirQuality(context.Context, *NotifyAirQualityReq) (*NotifyAirQualityResp, error)
 	mustEmbedUnimplementedEmailNotifServiceServer()
 }
 
@@ -52,6 +74,12 @@ type UnimplementedEmailNotifServiceServer struct {
 
 func (UnimplementedEmailNotifServiceServer) NotifyPaymentComplete(context.Context, *NotifyPaymentCompleteReq) (*NotifyPaymentCompleteResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NotifyPaymentComplete not implemented")
+}
+func (UnimplementedEmailNotifServiceServer) NotifyRegister(context.Context, *NotifyRegisterReq) (*NotifyRegisterResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotifyRegister not implemented")
+}
+func (UnimplementedEmailNotifServiceServer) NotifyAirQuality(context.Context, *NotifyAirQualityReq) (*NotifyAirQualityResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotifyAirQuality not implemented")
 }
 func (UnimplementedEmailNotifServiceServer) mustEmbedUnimplementedEmailNotifServiceServer() {}
 
@@ -84,6 +112,42 @@ func _EmailNotifService_NotifyPaymentComplete_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EmailNotifService_NotifyRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NotifyRegisterReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EmailNotifServiceServer).NotifyRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sub_payment.EmailNotifService/NotifyRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EmailNotifServiceServer).NotifyRegister(ctx, req.(*NotifyRegisterReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EmailNotifService_NotifyAirQuality_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NotifyAirQualityReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EmailNotifServiceServer).NotifyAirQuality(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sub_payment.EmailNotifService/NotifyAirQuality",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EmailNotifServiceServer).NotifyAirQuality(ctx, req.(*NotifyAirQualityReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EmailNotifService_ServiceDesc is the grpc.ServiceDesc for EmailNotifService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +158,14 @@ var EmailNotifService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NotifyPaymentComplete",
 			Handler:    _EmailNotifService_NotifyPaymentComplete_Handler,
+		},
+		{
+			MethodName: "NotifyRegister",
+			Handler:    _EmailNotifService_NotifyRegister_Handler,
+		},
+		{
+			MethodName: "NotifyAirQuality",
+			Handler:    _EmailNotifService_NotifyAirQuality_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

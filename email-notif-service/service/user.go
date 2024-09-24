@@ -1,11 +1,11 @@
 package service
 
 import (
+	"context"
 	"email-notif-service/entity"
 	"email-notif-service/pb"
 	"log"
 	"os"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -41,15 +41,19 @@ type userService struct {
 
 // GetUserByID implements UserService.
 func (u *userService) GetUserByID(id int) (*entity.User, error) {
-	//TODO
-	// return dummy user for now
+
+	res, err := u.userClient.GetUser(context.TODO(), &pb.GetUserRequest{
+		Id: uint64(id),
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &entity.User{
-		ID:          1,
-		Username:    "Razif",
-		Email:       "razif.dev@gmail.com",
-		PhoneNumber: "12345",
-		Tier:        "free",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:          id,
+		Username:    res.Username,
+		Email:       res.Email,
+		PhoneNumber: res.Phonenumber,
+		Tier:        res.Tier,
 	}, nil
 }
