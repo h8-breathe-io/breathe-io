@@ -68,6 +68,7 @@ services:
     environment:
       - DB_HOST=host.docker.internal
       - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
       - PORT=50004
     extra_hosts:
       - "host.docker.internal:host-gateway"
