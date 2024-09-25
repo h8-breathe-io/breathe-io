@@ -184,12 +184,18 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/air-qualities",
+							"raw": "{{baseUrl}}/air-qualities?locId=2",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"air-qualities"
+							],
+							"query": [
+								{
+									"key": "locId",
+									"value": "2"
+								}
 							]
 						}
 					},
@@ -198,8 +204,27 @@
 				{
 					"name": "/",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"latitude\": -6.200000,\n    \"longitude\": 106.816666\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/air-qualities",
 							"host": [
@@ -220,6 +245,16 @@
 				{
 					"name": "/",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -237,8 +272,27 @@
 				{
 					"name": "/",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_type\": \"Manufacturing\",\n  \"total_emission\": 15000.75,\n  \"location_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{baseUrl}}/business-facilities",
 							"host": [
@@ -254,16 +308,26 @@
 				{
 					"name": "/:id",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/1",
+							"raw": "{{baseUrl}}/business-facilities/4",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"1"
+								"4"
 							]
 						}
 					},
@@ -272,16 +336,35 @@
 				{
 					"name": "/:id",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_type\": \"Modified type\",\n  \"total_emission\": 123.45,\n  \"location_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/1",
+							"raw": "{{baseUrl}}/business-facilities/4",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"1"
+								"4"
 							]
 						}
 					},
@@ -290,16 +373,95 @@
 				{
 					"name": "/:id",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/1",
+							"raw": "{{baseUrl}}/business-facilities/4",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"1"
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": ":id/recommendation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/5/recommendation",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"5",
+								"recommendation"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "locations",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/locations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"locations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/locations/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"locations",
+								"2"
 							]
 						}
 					},
@@ -334,11 +496,6 @@
 		{
 			"key": "baseUrl",
 			"value": "localhost:8080",
-			"type": "string"
-		},
-		{
-			"key": "xendit-callback-token",
-			"value": "ytTWqNRZikgJGhqc3WRmcPVOxzQSwfosvTGR7fzI2Ee3yqoJ",
 			"type": "string"
 		}
 	]
