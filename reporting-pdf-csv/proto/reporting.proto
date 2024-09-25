@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package reporting;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/proto/pb";
+
+service ReportService {
+    rpc GenerateReport(ReportRequest) returns (ReportResponse);
+}
+
+message ReportRequest {
+    string tier = 1;          // Specify the user tier to filter data (e.g., 'free', 'business')
+    string start_date = 2;     // String format of start date (RFC3339)
+    string end_date = 3;       // String format of end date (RFC3339)
+}
+
+message ReportResponse {
+    string csv_location = 1;   // Directory location of the generated CSV file
+    string pdf_location = 2;   // Directory location of the generated PDF file
+}
+
+message User {
+    int32 id = 1;
+    string username = 2;
+    string email = 3;
+    string phonenumber = 4;
+    string tier = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+message Location {
+    int32 id = 1;
+    string location_name = 2;
+    float latitude = 3;
+    float longitude = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+}
+
+message BusinessFacility {
+    int32 id = 1;
+    int32 user_id = 2;
+    string company_type = 3;
+    float total_emission = 4;
+    Location location = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+message AirQuality {
+    int32 id = 1;
+    Location location = 2;
+    int32 aqi = 3;
+    float co = 4;
+    float no = 5;
+    float no2 = 6;
+    float o3 = 7;
+    float so2 = 8;
+    float pm25 = 9;
+    float pm10 = 10;
+    float nh3 = 11;
+    google.protobuf.Timestamp fetch_time = 12;
+    google.protobuf.Timestamp created_at = 13;
+}
