@@ -5,6 +5,7 @@ import (
 	"net"
 	"reporting/internal/database"
 	"reporting/internal/handlers"
+	"reporting/internal/service"
 	"reporting/proto/pb"
 
 	"github.com/joho/godotenv"
@@ -34,7 +35,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// Initialize the ReportService with the database connection
-	reportService := &handlers.ReportService{DB: db}
+	reportService := &handlers.ReportService{DB: db, UserService: service.NewUserService()}
 
 	// Register the ReportService with the gRPC server
 	pb.RegisterReportServiceServer(grpcServer, reportService)

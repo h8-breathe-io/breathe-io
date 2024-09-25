@@ -91,12 +91,27 @@ func NewLocClient() pb.LocationServiceClient {
 	return client
 }
 
+func NewReportClient() pb.ReportServiceClient {
+	addr := os.Getenv("REPORT_SERVICE_URL")
+	log.Printf("user service url: %s", addr)
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := pb.NewReportServiceClient(conn)
+
+	return client
+}
+
 type handler struct {
 	subsPaymentCLient pb.SubPaymentClient
 	userClient        pb.UserClient
 	aqClient          pb.AirQualityServiceClient
 	bfClient          pb.BusinessFacilitiesClient
 	locClient         pb.LocationServiceClient
+	reportService     pb.ReportServiceClient
 }
 
 func (h *handler) createContext(c echo.Context) context.Context {
@@ -427,6 +442,26 @@ func (h *handler) HandleGetLocationRecommendation(c echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
+func (h *handler) HandleGenerateReport(c echo.Context) error {
+
+	var req pb.ReportRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid body")
+	}
+
+	ctx := h.createContext(c)
+	res, err := h.reportService.GenerateReport(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
 func main() {
 	godotenv.Load()
 
@@ -436,6 +471,7 @@ func main() {
 		aqClient:          NewAQClient(),
 		bfClient:          NewBFClient(),
 		locClient:         NewLocClient(),
+		reportService:     NewReportClient(),
 	}
 
 	e := echo.New()

@@ -5,3 +5,4 @@ protoc:
 	protoc --proto_path=../air-quality-service/pb air_quality.proto --go_out=paths=source_relative:pb --go-grpc_out=paths=source_relative:pb
 	protoc --proto_path=../air-quality-service/pb location.proto --go_out=paths=source_relative:pb --go-grpc_out=paths=source_relative:pb
 	protoc --proto_path=../user-service/pb business_facilities.proto --go_out=paths=source_relative:pb --go-grpc_out=paths=source_relative:pb
+	protoc --proto_path=../reporting-pdf-csv/proto reporting.proto --go_out=paths=source_relative:pb --go-grpc_out=paths=source_relative:pb

@@ -11,6 +11,7 @@ services:
       - AIR_QUALITY_SERVICE_URL=air-quality-service:50004
       - LOCATION_SERVICE_URL=air-quality-service:50004
       - BUSINESS_FACILITIES_SERVICE_URL=user-service:50003
+      - REPORT_SERVICE_URL=localhost:50005
     depends_on:
       - subs_payment_service
       - email_notif_service
@@ -76,4 +77,19 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       - user_service
+
+  report_service:
+    build: ./reporting-pdf-csv
+    container_name: report-service
+    expose:
+      - 50005
+    env_file:
+      - ./reporting-pdf-csv/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
+      - PORT=50005
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     

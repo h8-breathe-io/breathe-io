@@ -10,7 +10,7 @@ compose: build_services docker_compose
 build_services:
 	@for service in $(SERVICES); do \
 		echo "Building $$service..."; \
-		$(MAKE) -C $$service; \
+		$(MAKE) -C $$service protoc; \
 	done
 
 # Target to run docker-compose
