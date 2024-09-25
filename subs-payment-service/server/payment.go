@@ -11,7 +11,7 @@ import (
 	"subs-payment-service/model"
 	"subs-payment-service/pb"
 	"subs-payment-service/service"
-	"subs-payment-service/util"
+
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -148,7 +148,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 	}
 
 	// validate token and get user
-	user, err := util.ValidateAndGetUser(c, ps.userService)
+	user, err := ps.userService.ValidateAndGetUser(c)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "invalid token '%d': %s", req.UserId, err.Error())
 	}

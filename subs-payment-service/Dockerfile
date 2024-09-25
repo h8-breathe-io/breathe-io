@@ -1,9 +1,12 @@
 FROM golang:1.22.4 AS build
 
-WORKDIR /subs-payment-service
+WORKDIR /app
 
 COPY . .
 
+# Change to /app
+WORKDIR /app
+
 RUN go build -o main .
 
-CMD ["/subs-payment-service/main"]
+CMD ["/app/main"]

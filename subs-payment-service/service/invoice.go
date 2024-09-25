@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"subs-payment-service/entity"
+
 	"subs-payment-service/model"
 )
 
 type InvoiceService interface {
 	GenerateInvoice(
-		forUser *entity.User,
+		forUser *User,
 		forUserSub *model.UserSubscription,
 		forPayment *model.Payment,
 	) (string, error)
@@ -44,7 +44,7 @@ func (is *invoiceService) BuildFailureUrl() string {
 }
 
 func (is *invoiceService) generateInvoiceDesc(
-	forUser *entity.User,
+	forUser *User,
 	forUserSub *model.UserSubscription,
 	forPayment *model.Payment,
 ) string {
@@ -64,7 +64,7 @@ func (is *invoiceService) generateInvoiceItems(forUserSub *model.UserSubscriptio
 }
 
 func (is *invoiceService) GenerateInvoice(
-	forUser *entity.User,
+	forUser *User,
 	forUserSub *model.UserSubscription,
 	forPayment *model.Payment,
 ) (string, error) {
