@@ -10,6 +10,16 @@ service BusinessFacilities {
   rpc GetBusinessFacility (GetBFRequest) returns (BFResponse);
   rpc UpdateBusinessFacility(UpdateBFRequest) returns (BFResponse);
   rpc DeleteBusinessFacility(DeleteBFRequest) returns (BFResponse);
+  rpc GetCarbonTax(GetCarbonTaxRequest) returns (GetCarbonTaxResponse);
+}
+
+message GetCarbonTaxRequest {
+  uint64 id = 1;
+}
+
+message GetCarbonTaxResponse {
+  string currency = 1;
+  double carbon_tax = 2;  
 }
 
 message UpdateBFRequest {

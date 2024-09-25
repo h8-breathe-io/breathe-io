@@ -11,6 +11,16 @@ service LocationService {
   rpc GetLocation (GetLocationRequest) returns (LocationResponse) {}
   rpc UpdateLocation (UpdateLocationRequest) returns (LocationResponse) {}
   rpc DeleteLocation (DeleteLocationRequest) returns (LocationResponse) {}
+  rpc GetLocationRecommendation (LocationRecommendationRequest) returns (LocationRecommendationResponse) {}
+}
+
+message LocationRecommendationRequest {
+    uint64 businessId = 1;
+}
+
+message LocationRecommendationResponse {
+    LocationResponse initialLocation = 1;
+    repeated LocationResponse recommendedLocations = 2;
 }
 
 message AddLocationRequest {

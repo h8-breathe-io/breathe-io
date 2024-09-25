@@ -18,9 +18,10 @@ func main() {
 
 	// instantiate dependencies
 	airQualityService := service.NewAirQualityService()
+	userService := service.NewUserService()
+	businessFacilityService := service.NewBusinessFacilityService()
 	airQualityHandler := handler.NewAirQualityHandler(db, airQualityService)
-
-	locationHandler := handler.NewLocationHandler(db)
+	locationHandler := handler.NewLocationHandler(db, userService, businessFacilityService)
 	grpcServer := grpc.NewServer()
 
 	pb.RegisterAirQualityServiceServer(grpcServer, airQualityHandler)
