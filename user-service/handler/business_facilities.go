@@ -224,3 +224,28 @@ func (bf *BusinessFacilityHandler) DeleteBusinessFacility(ctx context.Context, r
 		LocationId:    businessFacility.LocationID,
 	}, nil
 }
+
+func (bf *BusinessFacilityHandler) GetCarbonTax(ctx context.Context, req *pb.GetCarbonTaxRequest) (*pb.GetCarbonTaxResponse, error) {
+	//validate requests
+	if req.Id == 0 {
+		return nil, errors.New("business id is required")
+	}
+
+	//check if business facility exists
+	var businessFacility model.BusinessFacility
+	err := bf.db.Where("id = ?", req.Id).First(&businessFacility).Error
+	if err != nil {
+		return nil, errors.New("business facility not found")
+	}
+
+	//carbonTaxRate for indonesia per ton
+	carbonTaxRate := 2
+
+	//get carbon tax value for indonesia
+	carbonTax := businessFacility.TotalEmission * float64(carbonTaxRate)
+
+	return &pb.GetCarbonTaxResponse{
+		Currency:  "USD",
+		CarbonTax: carbonTax,
+	}, nil
+}
