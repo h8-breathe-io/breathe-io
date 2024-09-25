@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -47,9 +48,39 @@ func NewUserClient() pb.UserClient {
 	return client
 }
 
+func NewAQClient() pb.AirQualityServiceClient {
+	addr := os.Getenv("AIR_QUALITY_SERVICE_URL")
+	log.Printf("user service url: %s", addr)
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := pb.NewAirQualityServiceClient(conn)
+
+	return client
+}
+
+func NewBFClient() pb.BusinessFacilitiesClient {
+	addr := os.Getenv("BUSINESS_FACILITIES_SERVICE_URL")
+	log.Printf("user service url: %s", addr)
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := pb.NewBusinessFacilitiesClient(conn)
+
+	return client
+}
+
 type handler struct {
 	subsPaymentCLient pb.SubPaymentClient
 	userClient        pb.UserClient
+	aqClient          pb.AirQualityServiceClient
+	bfClient          pb.BusinessFacilitiesClient
 }
 
 func (h *handler) createContext(c echo.Context) context.Context {
@@ -161,12 +192,173 @@ func (h *handler) HandleLogin(c echo.Context) error {
 
 }
 
+func (h *handler) HandleSaveAirQualities(c echo.Context) error {
+	var req pb.SaveAirQualitiesRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	ctx := h.createContext(c)
+	res, err := h.aqClient.SaveAirQualities(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+
+}
+
+func (h *handler) HandleGetAirQualities(c echo.Context) error {
+	locId := c.QueryParam("locId")
+	startDate := c.QueryParam("startDate")
+	endDate := c.QueryParam("endDate")
+
+	locIdInt, err := strconv.Atoi(locId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid location id")
+	}
+
+	var req pb.GetAirQualitiesRequest
+	req.LocationId = uint64(locIdInt)
+	req.StartDate = startDate
+	req.EndDate = endDate
+
+	ctx := h.createContext(c)
+	res, err := h.aqClient.GetAirQualities(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+
+}
+
+func (h *handler) HandleAddBusinessFacility(c echo.Context) error {
+	var req pb.AddBFRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	ctx := h.createContext(c)
+	res, err := h.bfClient.AddBusinessFacility(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleGetBusinessFacilities(c echo.Context) error {
+	var req pb.GetBFRequests
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	ctx := h.createContext(c)
+	res, err := h.bfClient.GetBusinessFacilities(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleGetBusinessFacility(c echo.Context) error {
+	// get id param
+	idParam := c.Param("id")
+	bfId, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
+	}
+
+	var req pb.GetBFRequest
+	req.Id = uint64(bfId)
+
+	ctx := h.createContext(c)
+	res, err := h.bfClient.GetBusinessFacility(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleUpdateBusinessFacility(c echo.Context) error {
+	// get id param
+	idParam := c.Param("id")
+	bfId, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
+	}
+
+	var req pb.GetBFRequest
+	err = c.Bind(&req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	}
+	req.Id = uint64(bfId)
+
+	ctx := h.createContext(c)
+	res, err := h.bfClient.GetBusinessFacility(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleDeleteBusinessFacility(c echo.Context) error {
+	// get id param
+	idParam := c.Param("id")
+	bfId, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
+	}
+
+	var req pb.DeleteBFRequest
+	req.Id = uint64(bfId)
+
+	ctx := h.createContext(c)
+	res, err := h.bfClient.DeleteBusinessFacility(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
 func main() {
 	godotenv.Load()
 
 	handler := handler{
 		subsPaymentCLient: NewSubsPaymentClient(),
 		userClient:        NewUserClient(),
+		aqClient:          NewAQClient(),
+		bfClient:          NewBFClient(),
 	}
 
 	e := echo.New()
@@ -203,5 +395,17 @@ func main() {
 	users.POST("/register", handler.HandleRegister)
 	users.POST("/login", handler.HandleLogin)
 
+	// air-qualities
+	aq := e.Group("/air-qualities")
+	aq.POST("", handler.HandleSaveAirQualities)
+	aq.GET("", handler.HandleGetAirQualities)
+
+	// business facilities
+	bf := e.Group("/business-facilities")
+	bf.POST("", handler.HandleAddBusinessFacility)
+	bf.GET("", handler.HandleGetBusinessFacilities)
+	bf.GET("/:id", handler.HandleGetBusinessFacility)
+	bf.PUT("/:id", handler.HandleUpdateBusinessFacility)
+	bf.DELETE("/:id", handler.HandleDeleteBusinessFacility)
 	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT"))))
 }

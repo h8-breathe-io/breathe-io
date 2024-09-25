@@ -6,7 +6,6 @@ import (
 	"email-notif-service/pb"
 	"log"
 	"os"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -46,10 +45,7 @@ func (as *airQualityService) GetAirQualityByID(id int) (*entity.AirQuality, erro
 	if err != nil {
 		return nil, err
 	}
-	var fetchTime time.Time
-	if res.AirQuality.FetchTime != nil {
-		fetchTime = res.AirQuality.FetchTime.AsTime()
-	}
+
 	return &entity.AirQuality{
 		Id:         res.AirQuality.Id,
 		LocationId: res.AirQuality.LocationId,
@@ -62,6 +58,6 @@ func (as *airQualityService) GetAirQualityByID(id int) (*entity.AirQuality, erro
 		Pm25:       res.AirQuality.Pm25,
 		Pm10:       res.AirQuality.Pm10,
 		Nh3:        res.AirQuality.Nh3,
-		FetchTime:  &fetchTime,
+		FetchTime:  res.AirQuality.FetchTime,
 	}, nil
 }

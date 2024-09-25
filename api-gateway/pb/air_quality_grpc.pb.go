@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type AirQualityServiceClient interface {
 	GetAirQualities(ctx context.Context, in *GetAirQualitiesRequest, opts ...grpc.CallOption) (*GetAirQualitiesResponse, error)
 	SaveAirQualities(ctx context.Context, in *SaveAirQualitiesRequest, opts ...grpc.CallOption) (*SaveAirQualitiesResponse, error)
+	SaveHistoricalAirQualities(ctx context.Context, in *SaveHistoricalAirQualitiesRequest, opts ...grpc.CallOption) (*SaveAirQualitiesResponse, error)
+	GetAirQualityByID(ctx context.Context, in *GetAirQualityByIDReq, opts ...grpc.CallOption) (*GetAirQualityByIDResp, error)
 }
 
 type airQualityServiceClient struct {
@@ -48,12 +50,32 @@ func (c *airQualityServiceClient) SaveAirQualities(ctx context.Context, in *Save
 	return out, nil
 }
 
+func (c *airQualityServiceClient) SaveHistoricalAirQualities(ctx context.Context, in *SaveHistoricalAirQualitiesRequest, opts ...grpc.CallOption) (*SaveAirQualitiesResponse, error) {
+	out := new(SaveAirQualitiesResponse)
+	err := c.cc.Invoke(ctx, "/air_quality_grpc.AirQualityService/SaveHistoricalAirQualities", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *airQualityServiceClient) GetAirQualityByID(ctx context.Context, in *GetAirQualityByIDReq, opts ...grpc.CallOption) (*GetAirQualityByIDResp, error) {
+	out := new(GetAirQualityByIDResp)
+	err := c.cc.Invoke(ctx, "/air_quality_grpc.AirQualityService/GetAirQualityByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AirQualityServiceServer is the server API for AirQualityService service.
 // All implementations must embed UnimplementedAirQualityServiceServer
 // for forward compatibility
 type AirQualityServiceServer interface {
 	GetAirQualities(context.Context, *GetAirQualitiesRequest) (*GetAirQualitiesResponse, error)
 	SaveAirQualities(context.Context, *SaveAirQualitiesRequest) (*SaveAirQualitiesResponse, error)
+	SaveHistoricalAirQualities(context.Context, *SaveHistoricalAirQualitiesRequest) (*SaveAirQualitiesResponse, error)
+	GetAirQualityByID(context.Context, *GetAirQualityByIDReq) (*GetAirQualityByIDResp, error)
 	mustEmbedUnimplementedAirQualityServiceServer()
 }
 
@@ -66,6 +88,12 @@ func (UnimplementedAirQualityServiceServer) GetAirQualities(context.Context, *Ge
 }
 func (UnimplementedAirQualityServiceServer) SaveAirQualities(context.Context, *SaveAirQualitiesRequest) (*SaveAirQualitiesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveAirQualities not implemented")
+}
+func (UnimplementedAirQualityServiceServer) SaveHistoricalAirQualities(context.Context, *SaveHistoricalAirQualitiesRequest) (*SaveAirQualitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveHistoricalAirQualities not implemented")
+}
+func (UnimplementedAirQualityServiceServer) GetAirQualityByID(context.Context, *GetAirQualityByIDReq) (*GetAirQualityByIDResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAirQualityByID not implemented")
 }
 func (UnimplementedAirQualityServiceServer) mustEmbedUnimplementedAirQualityServiceServer() {}
 
@@ -116,6 +144,42 @@ func _AirQualityService_SaveAirQualities_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AirQualityService_SaveHistoricalAirQualities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveHistoricalAirQualitiesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AirQualityServiceServer).SaveHistoricalAirQualities(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/air_quality_grpc.AirQualityService/SaveHistoricalAirQualities",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AirQualityServiceServer).SaveHistoricalAirQualities(ctx, req.(*SaveHistoricalAirQualitiesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AirQualityService_GetAirQualityByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAirQualityByIDReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AirQualityServiceServer).GetAirQualityByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/air_quality_grpc.AirQualityService/GetAirQualityByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AirQualityServiceServer).GetAirQualityByID(ctx, req.(*GetAirQualityByIDReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AirQualityService_ServiceDesc is the grpc.ServiceDesc for AirQualityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +194,14 @@ var AirQualityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SaveAirQualities",
 			Handler:    _AirQualityService_SaveAirQualities_Handler,
+		},
+		{
+			MethodName: "SaveHistoricalAirQualities",
+			Handler:    _AirQualityService_SaveHistoricalAirQualities_Handler,
+		},
+		{
+			MethodName: "GetAirQualityByID",
+			Handler:    _AirQualityService_GetAirQualityByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

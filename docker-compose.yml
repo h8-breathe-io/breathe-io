@@ -8,10 +8,13 @@ services:
       - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
       - EMAIL_NOTIF_URL=email-notif-service:50002
       - USER_SERVICE_URL=user-service:50003
+      - AIR_QUALITY_SERVICE_URL=air-quality-service:50004
+      - BUSINESS_FACILITIES_SERVICE_URL=user-service:50003
     depends_on:
       - subs_payment_service
       - email_notif_service
       - user_service
+      - air_quality_service
   
   subs_payment_service:
     build: ./subs-payment-service
@@ -38,6 +41,7 @@ services:
       - ./email-notif-service/.env
     environment:
       - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+      - AIR_QUALITY_SERVICE=air-quality-service:50004
 
   user_service:
     build: ./user-service
@@ -53,5 +57,19 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-
+  air_quality_service:
+    build: ./air-quality-service
+    container_name: air-quality-service
+    expose:
+      - 50004
+    env_file:
+      - ./air-quality-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - PORT=50004
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - user_service
     

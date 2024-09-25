@@ -1,6 +1,6 @@
 module air-quality-service
 
-go 1.22.5
+go 1.22.4
 
 require (
 	github.com/go-resty/resty/v2 v2.15.1
