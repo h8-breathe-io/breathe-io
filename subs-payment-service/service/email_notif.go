@@ -43,19 +43,29 @@ type emailNotifService struct {
 // NotifyAirQuality implements EmailNotifService.
 func (es *emailNotifService) NotifyAirQuality(userID int, airQualityID int) {
 	go func() {
-		es.emailNotifClient.NotifyAirQuality(context.TODO(), &pb.NotifyAirQualityReq{
+		res, err := es.emailNotifClient.NotifyAirQuality(context.TODO(), &pb.NotifyAirQualityReq{
 			UserId:       int64(userID),
 			AirQualityId: int64(airQualityID),
 		})
+		if err != nil {
+			log.Printf("notify air quality email failed: %s ", err.Error())
+			return
+		}
+		log.Printf("notify air quality email complete: %v ", res)
 	}()
 }
 
 // NotifyRegister implements EmailNotifService.
 func (es *emailNotifService) NotifyRegister(userID int) {
 	go func() {
-		es.emailNotifClient.NotifyRegister(context.TODO(), &pb.NotifyRegisterReq{
+		res, err := es.emailNotifClient.NotifyRegister(context.TODO(), &pb.NotifyRegisterReq{
 			UserId: int64(userID),
 		})
+		if err != nil {
+			log.Printf("notify register email failed: %s ", err.Error())
+			return
+		}
+		log.Printf("notify register emailcomplete: %v ", res)
 	}()
 }
 

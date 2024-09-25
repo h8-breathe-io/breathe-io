@@ -1,10 +1,10 @@
 package service
 
 import (
-	pb "air-quality-service/pb/generated"
 	"context"
 	"log"
 	"os"
+	pb "user-service/pb/generated"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
