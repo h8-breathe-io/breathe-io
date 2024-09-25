@@ -309,7 +309,7 @@ func (h *handler) HandleUpdateBusinessFacility(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
 	}
 
-	var req pb.GetBFRequest
+	var req pb.UpdateBFRequest
 	err = c.Bind(&req)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid request body")
@@ -317,7 +317,7 @@ func (h *handler) HandleUpdateBusinessFacility(c echo.Context) error {
 	req.Id = uint64(bfId)
 
 	ctx := h.createContext(c)
-	res, err := h.bfClient.GetBusinessFacility(
+	res, err := h.bfClient.UpdateBusinessFacility(
 		ctx,
 		&req,
 	)

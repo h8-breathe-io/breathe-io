@@ -5,28 +5,33 @@ import (
 	"errors"
 	"user-service/model"
 	pb "user-service/pb/generated"
+	"user-service/service"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
 type BusinessFacilityHandler struct {
 	pb.UnimplementedBusinessFacilitiesServer
-	db *gorm.DB
-	ls pb.LocationServiceClient
+	db          *gorm.DB
+	ls          pb.LocationServiceClient
+	userService service.UserService
 }
 
 func NewBusinessFacilitiesHandler(db *gorm.DB, ls pb.LocationServiceClient) *BusinessFacilityHandler {
 	return &BusinessFacilityHandler{
-		db: db,
-		ls: ls,
+		db:          db,
+		ls:          ls,
+		userService: service.NewUserService(db),
 	}
 }
 
 func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req *pb.AddBFRequest) (*pb.BFResponse, error) {
 	//validate requests
-	if req.UserId == 0 {
-		return nil, errors.New("user id is required")
-	}
+	// if req.UserId == 0 {
+	// 	return nil, errors.New("user id is required")
+	// }
 
 	if req.CompanyType == "" {
 		return nil, errors.New("company Type is required")
@@ -40,12 +45,10 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 		return nil, errors.New("location id is required")
 	}
 
-	// check if user id valid
-
-	var user model.User
-	err := bf.db.Where("id = ?", req.UserId).First(&user).Error
+	// validate token and get user
+	user, err := bf.userService.ValidateAndGetUser(ctx)
 	if err != nil {
-		return nil, errors.New("user not found")
+		return nil, status.Errorf(codes.Internal, "invalid token '%d': %s", req.UserId, err.Error())
 	}
 
 	//check if location id valid
@@ -56,7 +59,7 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 
 	// create new BusinessFacility
 	businessFacility := model.BusinessFacility{
-		UserID:        req.UserId,
+		UserID:        uint64(user.ID),
 		CompanyType:   req.CompanyType,
 		TotalEmission: req.TotalEmission,
 		LocationID:    location.LocationId,
@@ -78,21 +81,19 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 
 func (bf *BusinessFacilityHandler) GetBusinessFacilities(ctx context.Context, req *pb.GetBFRequests) (*pb.BFResponses, error) {
 	//validate requests
-	if req.UserId == 0 {
-		return nil, errors.New("user_id is required")
-	}
+	// if req.UserId == 0 {
+	// 	return nil, errors.New("user_id is required")
+	// }
 
-	//check if user exists
-
-	var user model.User
-	err := bf.db.Where("id = ?", req.UserId).First(&user).Error
+	// validate token and get user
+	user, err := bf.userService.ValidateAndGetUser(ctx)
 	if err != nil {
-		return nil, errors.New("user not found")
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
 	}
 
 	//get all business facilities of the user
 	var businessFacilities []model.BusinessFacility
-	err = bf.db.Where("user_id = ?", req.UserId).Find(&businessFacilities).Error
+	err = bf.db.Where("user_id = ?", user.ID).Find(&businessFacilities).Error
 	if err != nil {
 		return nil, errors.New("failed to get business facilities")
 	}
@@ -120,11 +121,22 @@ func (bf *BusinessFacilityHandler) GetBusinessFacility(ctx context.Context, req 
 		return nil, errors.New("id is required")
 	}
 
+	// validate token and get user
+	user, err := bf.userService.ValidateAndGetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+
 	//check if business facility exists
 	var businessFacility model.BusinessFacility
-	err := bf.db.Where("id = ?", req.Id).First(&businessFacility).Error
+	err = bf.db.Where("id = ?", req.Id).First(&businessFacility).Error
 	if err != nil {
 		return nil, errors.New("business facility not found")
+	}
+
+	// ensure business facility belongs to user
+	if businessFacility.UserID != uint64(user.ID) {
+		return nil, errors.New("business facility doesn't belong to user")
 	}
 
 	return &pb.BFResponse{
@@ -148,9 +160,9 @@ func (bf *BusinessFacilityHandler) UpdateBusinessFacility(ctx context.Context, r
 		return nil, errors.New("business facility not found")
 	}
 
-	if req.UserId == 0 {
-		req.UserId = businessFacility.UserID
-	}
+	// if req.UserId == 0 {
+	// 	req.UserId = businessFacility.UserID
+	// }
 
 	if req.CompanyType == "" {
 		req.CompanyType = businessFacility.CompanyType
@@ -164,11 +176,15 @@ func (bf *BusinessFacilityHandler) UpdateBusinessFacility(ctx context.Context, r
 		req.LocationId = businessFacility.LocationID
 	}
 
-	//check if user id valid
-	var user model.User
-	err = bf.db.Where("id = ?", req.UserId).First(&user).Error
+	// validate token and get user
+	user, err := bf.userService.ValidateAndGetUser(ctx)
 	if err != nil {
-		return nil, errors.New("user not found")
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+
+	// ensure business facility belongs to user
+	if businessFacility.UserID != uint64(user.ID) {
+		return nil, errors.New("business facility doesn't belong to user")
 	}
 
 	//check if location id valid
@@ -179,7 +195,7 @@ func (bf *BusinessFacilityHandler) UpdateBusinessFacility(ctx context.Context, r
 	}
 
 	updateBusinessFacility := model.BusinessFacility{
-		UserID:        req.UserId,
+		UserID:        uint64(user.ID),
 		CompanyType:   req.CompanyType,
 		TotalEmission: req.TotalEmission,
 		LocationID:    req.LocationId,
@@ -209,6 +225,16 @@ func (bf *BusinessFacilityHandler) DeleteBusinessFacility(ctx context.Context, r
 	err := bf.db.Where("id = ?", req.Id).First(&businessFacility).Error
 	if err != nil {
 		return nil, errors.New("business facility not found")
+	}
+
+	// validate token and get user
+	user, err := bf.userService.ValidateAndGetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+	// ensure business facility belongs to user
+	if businessFacility.UserID != uint64(user.ID) {
+		return nil, errors.New("business facility doesn't belong to user")
 	}
 
 	err = bf.db.Delete(&businessFacility).Error

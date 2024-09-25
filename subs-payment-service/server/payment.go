@@ -150,13 +150,8 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 	// validate token and get user
 	user, err := ps.userService.ValidateAndGetUser(c)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "invalid token '%d': %s", req.UserId, err.Error())
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
 	}
-	// get user
-	// user, err := ps.userService.GetUserByID(int(req.UserId))
-	// if err != nil {
-	// 	return nil, status.Errorf(codes.Internal, "failed to get user id '%d': %s", req.UserId, err.Error())
-	// }
 
 	// get subscribtion
 	var sub model.Subscription

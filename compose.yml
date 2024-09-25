@@ -53,6 +53,7 @@ services:
     environment:
       - DB_HOST=host.docker.internal
       - EMAIL_NOTIF_URL=email-notif-service:50002
+      - LOCATION_GRPC_ADDR=air-quality-service:50004
       - PORT=50003
     extra_hosts:
       - "host.docker.internal:host-gateway"

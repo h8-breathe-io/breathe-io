@@ -6,6 +6,7 @@ SERVICES = air-quality-service api-gateway email-notif-service subs-payment-serv
 
 compose: build_services docker_compose
 
+# runs make file in each service
 build_services:
 	@for service in $(SERVICES); do \
 		echo "Building $$service..."; \
@@ -15,4 +16,4 @@ build_services:
 # Target to run docker-compose
 docker_compose:
 	@echo "Running docker-compose..."
-	docker-compose up --build
+	docker compose up --build
