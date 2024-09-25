@@ -1,5 +1,5 @@
 # List of services
-SERVICES = air-quality-service api-gateway email-notif-service subs-payment-service user-service
+SERVICES = air-quality-service api-gateway email-notif-service subs-payment-service user-service reporting-pdf-csv
 
 # Target to build each service by running make in its folder
 .PHONY: all build_services docker_compose
