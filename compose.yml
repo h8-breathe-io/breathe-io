@@ -9,6 +9,7 @@ services:
       - EMAIL_NOTIF_URL=email-notif-service:50002
       - USER_SERVICE_URL=user-service:50003
       - AIR_QUALITY_SERVICE_URL=air-quality-service:50004
+      - LOCATION_SERVICE_URL=air-quality-service:50004
       - BUSINESS_FACILITIES_SERVICE_URL=user-service:50003
     depends_on:
       - subs_payment_service
@@ -69,6 +70,7 @@ services:
       - DB_HOST=host.docker.internal
       - EMAIL_NOTIF_URL=email-notif-service:50002
       - USER_SERVICE_URL=user-service:50003
+      - BUSINESS_FACILITY_SERVICE_URL=user-service:50003
       - PORT=50004
     extra_hosts:
       - "host.docker.internal:host-gateway"

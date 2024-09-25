@@ -24,6 +24,7 @@ type LocationServiceClient interface {
 	GetLocation(ctx context.Context, in *GetLocationRequest, opts ...grpc.CallOption) (*LocationResponse, error)
 	UpdateLocation(ctx context.Context, in *UpdateLocationRequest, opts ...grpc.CallOption) (*LocationResponse, error)
 	DeleteLocation(ctx context.Context, in *DeleteLocationRequest, opts ...grpc.CallOption) (*LocationResponse, error)
+	GetLocationRecommendation(ctx context.Context, in *LocationRecommendationRequest, opts ...grpc.CallOption) (*LocationRecommendationResponse, error)
 }
 
 type locationServiceClient struct {
@@ -79,6 +80,15 @@ func (c *locationServiceClient) DeleteLocation(ctx context.Context, in *DeleteLo
 	return out, nil
 }
 
+func (c *locationServiceClient) GetLocationRecommendation(ctx context.Context, in *LocationRecommendationRequest, opts ...grpc.CallOption) (*LocationRecommendationResponse, error) {
+	out := new(LocationRecommendationResponse)
+	err := c.cc.Invoke(ctx, "/air_quality_grpc.LocationService/GetLocationRecommendation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LocationServiceServer is the server API for LocationService service.
 // All implementations must embed UnimplementedLocationServiceServer
 // for forward compatibility
@@ -88,6 +98,7 @@ type LocationServiceServer interface {
 	GetLocation(context.Context, *GetLocationRequest) (*LocationResponse, error)
 	UpdateLocation(context.Context, *UpdateLocationRequest) (*LocationResponse, error)
 	DeleteLocation(context.Context, *DeleteLocationRequest) (*LocationResponse, error)
+	GetLocationRecommendation(context.Context, *LocationRecommendationRequest) (*LocationRecommendationResponse, error)
 	mustEmbedUnimplementedLocationServiceServer()
 }
 
@@ -109,6 +120,9 @@ func (UnimplementedLocationServiceServer) UpdateLocation(context.Context, *Updat
 }
 func (UnimplementedLocationServiceServer) DeleteLocation(context.Context, *DeleteLocationRequest) (*LocationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLocation not implemented")
+}
+func (UnimplementedLocationServiceServer) GetLocationRecommendation(context.Context, *LocationRecommendationRequest) (*LocationRecommendationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLocationRecommendation not implemented")
 }
 func (UnimplementedLocationServiceServer) mustEmbedUnimplementedLocationServiceServer() {}
 
@@ -213,6 +227,24 @@ func _LocationService_DeleteLocation_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LocationService_GetLocationRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LocationRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LocationServiceServer).GetLocationRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/air_quality_grpc.LocationService/GetLocationRecommendation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LocationServiceServer).GetLocationRecommendation(ctx, req.(*LocationRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LocationService_ServiceDesc is the grpc.ServiceDesc for LocationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -239,6 +271,10 @@ var LocationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteLocation",
 			Handler:    _LocationService_DeleteLocation_Handler,
+		},
+		{
+			MethodName: "GetLocationRecommendation",
+			Handler:    _LocationService_GetLocationRecommendation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

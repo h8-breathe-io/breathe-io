@@ -23,6 +23,7 @@ type BusinessFacilitiesClient interface {
 	GetBusinessFacility(ctx context.Context, in *GetBFRequest, opts ...grpc.CallOption) (*BFResponse, error)
 	UpdateBusinessFacility(ctx context.Context, in *UpdateBFRequest, opts ...grpc.CallOption) (*BFResponse, error)
 	DeleteBusinessFacility(ctx context.Context, in *DeleteBFRequest, opts ...grpc.CallOption) (*BFResponse, error)
+	GetCarbonTax(ctx context.Context, in *GetCarbonTaxRequest, opts ...grpc.CallOption) (*GetCarbonTaxResponse, error)
 }
 
 type businessFacilitiesClient struct {
@@ -78,6 +79,15 @@ func (c *businessFacilitiesClient) DeleteBusinessFacility(ctx context.Context, i
 	return out, nil
 }
 
+func (c *businessFacilitiesClient) GetCarbonTax(ctx context.Context, in *GetCarbonTaxRequest, opts ...grpc.CallOption) (*GetCarbonTaxResponse, error) {
+	out := new(GetCarbonTaxResponse)
+	err := c.cc.Invoke(ctx, "/business_facilities.BusinessFacilities/GetCarbonTax", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BusinessFacilitiesServer is the server API for BusinessFacilities service.
 // All implementations must embed UnimplementedBusinessFacilitiesServer
 // for forward compatibility
@@ -87,6 +97,7 @@ type BusinessFacilitiesServer interface {
 	GetBusinessFacility(context.Context, *GetBFRequest) (*BFResponse, error)
 	UpdateBusinessFacility(context.Context, *UpdateBFRequest) (*BFResponse, error)
 	DeleteBusinessFacility(context.Context, *DeleteBFRequest) (*BFResponse, error)
+	GetCarbonTax(context.Context, *GetCarbonTaxRequest) (*GetCarbonTaxResponse, error)
 	mustEmbedUnimplementedBusinessFacilitiesServer()
 }
 
@@ -108,6 +119,9 @@ func (UnimplementedBusinessFacilitiesServer) UpdateBusinessFacility(context.Cont
 }
 func (UnimplementedBusinessFacilitiesServer) DeleteBusinessFacility(context.Context, *DeleteBFRequest) (*BFResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBusinessFacility not implemented")
+}
+func (UnimplementedBusinessFacilitiesServer) GetCarbonTax(context.Context, *GetCarbonTaxRequest) (*GetCarbonTaxResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCarbonTax not implemented")
 }
 func (UnimplementedBusinessFacilitiesServer) mustEmbedUnimplementedBusinessFacilitiesServer() {}
 
@@ -212,6 +226,24 @@ func _BusinessFacilities_DeleteBusinessFacility_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BusinessFacilities_GetCarbonTax_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCarbonTaxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BusinessFacilitiesServer).GetCarbonTax(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/business_facilities.BusinessFacilities/GetCarbonTax",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BusinessFacilitiesServer).GetCarbonTax(ctx, req.(*GetCarbonTaxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BusinessFacilities_ServiceDesc is the grpc.ServiceDesc for BusinessFacilities service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +270,10 @@ var BusinessFacilities_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteBusinessFacility",
 			Handler:    _BusinessFacilities_DeleteBusinessFacility_Handler,
+		},
+		{
+			MethodName: "GetCarbonTax",
+			Handler:    _BusinessFacilities_GetCarbonTax_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

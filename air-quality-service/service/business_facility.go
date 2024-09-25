@@ -26,7 +26,7 @@ func NewBusinessFacilityClient() pb.BusinessFacilitiesClient {
 }
 
 type BusinessFacilityService interface {
-	GetBusinessFacilityByID(id int) (*entity.BusinessFacility, error)
+	GetBusinessFacilityByID(ctx context.Context, id int) (*entity.BusinessFacility, error)
 }
 
 func NewBusinessFacilityService() BusinessFacilityService {
@@ -40,9 +40,9 @@ type businessFacilityService struct {
 }
 
 // GetBusinessFacilityByID implements BusinessFacilityService.
-func (b *businessFacilityService) GetBusinessFacilityByID(id int) (*entity.BusinessFacility, error) {
+func (b *businessFacilityService) GetBusinessFacilityByID(ctx context.Context, id int) (*entity.BusinessFacility, error) {
 
-	res, err := b.businessFacilityClient.GetBusinessFacility(context.TODO(), &pb.GetBFRequest{
+	res, err := b.businessFacilityClient.GetBusinessFacility(ctx, &pb.GetBFRequest{
 		Id: uint64(id),
 	})
 	if err != nil {

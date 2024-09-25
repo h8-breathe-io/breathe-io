@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "api-gateway/pb"
 	"api-gateway/util"
@@ -76,11 +77,26 @@ func NewBFClient() pb.BusinessFacilitiesClient {
 	return client
 }
 
+func NewLocClient() pb.LocationServiceClient {
+	addr := os.Getenv("LOCATION_SERVICE_URL")
+	log.Printf("user service url: %s", addr)
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := pb.NewLocationServiceClient(conn)
+
+	return client
+}
+
 type handler struct {
 	subsPaymentCLient pb.SubPaymentClient
 	userClient        pb.UserClient
 	aqClient          pb.AirQualityServiceClient
 	bfClient          pb.BusinessFacilitiesClient
+	locClient         pb.LocationServiceClient
 }
 
 func (h *handler) createContext(c echo.Context) context.Context {
@@ -351,6 +367,66 @@ func (h *handler) HandleDeleteBusinessFacility(c echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
+func (h *handler) HandleGetLocations(c echo.Context) error {
+
+	ctx := h.createContext(c)
+	res, err := h.locClient.GetLocations(
+		ctx,
+		&emptypb.Empty{},
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleGetLocation(c echo.Context) error {
+	// get id param
+	idParam := c.Param("id")
+	bfId, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
+	}
+
+	var req pb.GetLocationRequest
+	req.LocationId = uint64(bfId)
+
+	ctx := h.createContext(c)
+	res, err := h.locClient.GetLocation(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *handler) HandleGetLocationRecommendation(c echo.Context) error {
+	// get id param
+	idParam := c.Param("id")
+	bfId, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid BF id")
+	}
+
+	var req pb.LocationRecommendationRequest
+	req.BusinessId = uint64(bfId)
+
+	ctx := h.createContext(c)
+	res, err := h.locClient.GetLocationRecommendation(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
 func main() {
 	godotenv.Load()
 
@@ -359,6 +435,7 @@ func main() {
 		userClient:        NewUserClient(),
 		aqClient:          NewAQClient(),
 		bfClient:          NewBFClient(),
+		locClient:         NewLocClient(),
 	}
 
 	e := echo.New()
@@ -368,23 +445,8 @@ func main() {
 	// set error handler
 	e.HTTPErrorHandler = util.ErrorHandler
 
-	// TODO middleware to handle JWT token
-	authMiddleware := func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			// 1. Parse and get token from `Authorization` header
-			// 2. use RegisterLoginClient to call login function
-			// 3. get result of login call, return err if failed
-			// 4. if token valid, get user_id from the claims in the JWT
-			// 5. Attach user id to context
-			// 		c.Set("user_id", userId)
-			// 6. handlers can then get the user id and pass it on to grpc calls that need it
-			return next(c)
-		}
-	}
-
 	// user subs
 	userSubs := e.Group("/user-subscriptions")
-	userSubs.Use(authMiddleware)
 	userSubs.POST("", handler.HandleCreateUserSubscription)
 	// callback for xendit
 	// don't need auth since it uses xendit token, will be authenticated in service
@@ -407,5 +469,13 @@ func main() {
 	bf.GET("/:id", handler.HandleGetBusinessFacility)
 	bf.PUT("/:id", handler.HandleUpdateBusinessFacility)
 	bf.DELETE("/:id", handler.HandleDeleteBusinessFacility)
+	bf.GET("/:id/recommendation", handler.HandleGetLocationRecommendation)
+
+	// locations
+	l := e.Group("/locations")
+	l.GET("", handler.HandleGetLocations)
+	l.GET("/:id", handler.HandleGetLocation)
+
+	// start server
 	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT"))))
 }
