@@ -513,5 +513,5 @@ func main() {
 	l.GET("/:id", handler.HandleGetLocation)
 
 	// start server
-	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT"))))
+	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))))
 }

@@ -38,7 +38,7 @@ func main() {
 		// https://godoc.org/google.golang.org/grpc#StreamInterceptor
 		// grpc.UnaryInterceptor(jwtIntercept.EnsureValidToken),
 	}
-	port := os.Getenv("LISTEN_PORT")
+	port := os.Getenv("PORT")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatal(err)

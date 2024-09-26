@@ -17,3 +17,9 @@ build_services:
 docker_compose:
 	@echo "Running docker-compose..."
 	docker compose up --build
+
+cloud:
+	@for service in $(SERVICES); do \
+		echo "Building $$service..."; \
+		$(MAKE) -C $$service cloud; \
+	done
