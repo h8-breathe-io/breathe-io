@@ -28,7 +28,7 @@ cloud_run:
 		--set-env-vars DB_PASS=$(DB_PASS) \
 		--set-env-vars XENDIT_API_KEY=$(XENDIT_API_KEY) \
 		--set-env-vars XENDIT_WEBHOOK_TOKEN=$(XENDIT_WEBHOOK_TOKEN) \
-		--set-env-vars XENDIT_INVOICE_CALLBACK=$(API_GATEWAY)/payment-callback \
+		--set-env-vars XENDIT_INVOICE_CALLBACK=https://www.xendit.co/en-id/ \
 		--set-env-vars EMAIL_NOTIF_URL=$(EMAIL_NOTIF_URL) \
 		--set-env-vars USER_SERVICE_URL=$(USER_SERVICE_URL)
 

@@ -7,6 +7,7 @@ import (
 	pb "user-service/pb/generated"
 	"user-service/service"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -54,7 +55,7 @@ func (bf *BusinessFacilityHandler) AddBusinessFacility(ctx context.Context, req 
 	//check if location id valid
 	location, err := bf.ls.GetLocation(ctx, &pb.GetLocationRequest{LocationId: req.LocationId})
 	if err != nil {
-		return nil, errors.New("location not found")
+		return nil, grpc.Errorf(codes.NotFound, "location not found: %s", err.Error())
 	}
 
 	// create new BusinessFacility
