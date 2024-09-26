@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"log"
 	"os"
-	pb "subs-payment-service/pb"
+	pb "user-service/pb/generated"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

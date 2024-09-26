@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	pb "air-quality-service/pb/generated"
+	"reporting/proto/pb"
 	"time"
 
 	"google.golang.org/grpc"

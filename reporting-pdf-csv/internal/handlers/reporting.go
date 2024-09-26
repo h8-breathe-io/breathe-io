@@ -4,15 +4,19 @@ import (
 	"context"
 	"fmt"
 	"reporting/internal/helpers"
+	"reporting/internal/service"
 	"reporting/proto/pb"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
 // ReportService struct holds necessary dependencies, such as database connection
 type ReportService struct {
 	DB                                  *gorm.DB
+	UserService                         service.UserService
 	pb.UnimplementedReportServiceServer // This is required to avoid breaking gRPC compatibility
 }
 
@@ -43,6 +47,12 @@ func (s *ReportService) GenerateReport(ctx context.Context, req *pb.ReportReques
 	var startDate, endDate time.Time
 	var err error
 
+	// validate token and get user
+	user, err := s.UserService.ValidateAndGetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+
 	if req.StartDate != "" {
 		startDate, err = time.Parse(time.RFC3339, req.StartDate)
 		if err != nil {
@@ -56,7 +66,7 @@ func (s *ReportService) GenerateReport(ctx context.Context, req *pb.ReportReques
 		}
 	}
 
-	userID := 1
+	userID := user.ID
 
 	// Build the query
 	query := s.DB.Table("users u").

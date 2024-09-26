@@ -4,9 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-# Change to /app
-WORKDIR /app
-
 RUN go build -o main .
 
 CMD ["/app/main"]

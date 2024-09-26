@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
+	"os"
 	"reporting/internal/database"
 	"reporting/internal/handlers"
+	"reporting/internal/service"
 	"reporting/proto/pb"
 
 	"github.com/joho/godotenv"
@@ -25,7 +28,9 @@ func main() {
 	db := database.DB
 
 	// Set up gRPC server
-	lis, err := net.Listen("tcp", ":50051")
+	port := os.Getenv("PORT")
+	addr := fmt.Sprintf(":%s", port)
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -34,13 +39,13 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	// Initialize the ReportService with the database connection
-	reportService := &handlers.ReportService{DB: db}
+	reportService := &handlers.ReportService{DB: db, UserService: service.NewUserService()}
 
 	// Register the ReportService with the gRPC server
 	pb.RegisterReportServiceServer(grpcServer, reportService)
 
 	// Start the gRPC server
-	log.Println("gRPC server started on :50051")
+	log.Printf("gRPC server started on %s", addr)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

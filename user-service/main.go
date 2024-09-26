@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
@@ -10,7 +12,7 @@ import (
 	pb "user-service/pb/generated"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
@@ -18,7 +20,16 @@ func main() {
 
 	//make connection to location grpc server
 	locationAddr := os.Getenv("LOCATION_GRPC_ADDR")
-	locationConn, err := grpc.NewClient(locationAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts := []grpc.DialOption{}
+	systemRoots, err := x509.SystemCertPool()
+	if err != nil {
+		log.Fatalf("filed to get certs: %v", err)
+	}
+	cred := credentials.NewTLS(&tls.Config{
+		RootCAs: systemRoots,
+	})
+	opts = append(opts, grpc.WithTransportCredentials(cred))
+	locationConn, err := grpc.NewClient(locationAddr, opts...)
 	if err != nil {
 		log.Fatalf("failed to connect to location service: %v", err)
 	}

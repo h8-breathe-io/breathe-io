@@ -7,11 +7,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 
 	pb "air-quality-service/pb/generated"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -19,12 +22,16 @@ type AirQualityHandler struct {
 	pb.UnimplementedAirQualityServiceServer
 	db                *gorm.DB
 	airQualityService *service.AirQualityService
+	userService       service.UserService
+	emailNotif        service.EmailNotifService
 }
 
 func NewAirQualityHandler(db *gorm.DB, airQualityService *service.AirQualityService) *AirQualityHandler {
 	return &AirQualityHandler{
 		db:                db,
 		airQualityService: airQualityService,
+		userService:       service.NewUserService(),
+		emailNotif:        service.NewEmailNotifService(),
 	}
 }
 
@@ -34,6 +41,13 @@ type FetchAirQualityRequest struct {
 }
 
 func (ah *AirQualityHandler) SaveAirQualities(ctx context.Context, req *pb.SaveAirQualitiesRequest) (*pb.SaveAirQualitiesResponse, error) {
+
+	// validate token and get user
+	user, err := ah.userService.ValidateAndGetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+
 	//validate lat and long from req
 	// check if latitude is off limit
 	if req.Latitude < -90 || req.Latitude > 90 {
@@ -53,7 +67,7 @@ func (ah *AirQualityHandler) SaveAirQualities(ctx context.Context, req *pb.SaveA
 
 	//search if lat and lon combination exist, if not create new location
 	var location model.Location
-	err := ah.db.Where("latitude = ? AND longitude = ?", reqBody.Latitude, reqBody.Longitude).First(&location).Error
+	err = ah.db.Where("latitude = ? AND longitude = ?", reqBody.Latitude, reqBody.Longitude).First(&location).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			location = model.Location{
@@ -102,11 +116,27 @@ func (ah *AirQualityHandler) SaveAirQualities(ctx context.Context, req *pb.SaveA
 	if err := ah.db.Create(&airQualities).Error; err != nil {
 		return nil, errors.New("failed to save air qualities")
 	}
+	// sort by largest fetch time first, latest data on top
+	slices.SortFunc(airQualities, func(f model.AirQuality, s model.AirQuality) int {
+		// nil fetch time should be put at the bottom
+		if f.FetchTime == nil {
+			return 1
+		}
+		if s.FetchTime == nil {
+			return -1
+		}
+		// reverse for descending, i.e. latest first
+		return s.FetchTime.Second() - f.FetchTime.Second()
+	})
 
 	res := &pb.SaveAirQualitiesResponse{
 		Success: true,
 	}
 
+	//notif email
+	if len(airQualities) > 0 {
+		ah.emailNotif.NotifyAirQuality(user.ID, int(airQualities[0].ID))
+	}
 	return res, nil
 }
 

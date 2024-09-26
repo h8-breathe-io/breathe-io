@@ -23,7 +23,7 @@ message GetCarbonTaxResponse {
 }
 
 message UpdateBFRequest {
-  uint64 user_id = 1;
+  uint64 user_id = 1 [deprecated = true];
   string company_type = 2;
   double total_emission = 3;
   uint64 location_id = 4;
@@ -31,7 +31,7 @@ message UpdateBFRequest {
 }
 
 message AddBFRequest {
-  uint64 user_id = 1;
+  uint64 user_id = 1 [deprecated = true];
   string company_type = 2;
   double total_emission = 3;
   uint64 location_id = 4;
@@ -42,7 +42,7 @@ message GetBFRequest {
 }
 
 message GetBFRequests {
-  uint64 user_id = 1;
+  uint64 user_id = 1 [deprecated = true];
 }
 
 message DeleteBFRequest {

@@ -29,5 +29,5 @@ func ConnectDB() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	fmt.Println("Database connected and models migrated successfully!")
+	fmt.Println("Database connected")
 }

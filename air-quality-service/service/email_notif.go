@@ -1,12 +1,12 @@
 package service
 
 import (
+	pb "air-quality-service/pb/generated"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"log"
 	"os"
-	pb "subs-payment-service/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

@@ -7,6 +7,7 @@ import (
 	"os"
 	"user-service/model"
 	pb "user-service/pb/generated"
+	"user-service/service"
 	"user-service/util"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,12 +16,14 @@ import (
 
 type UserHandler struct {
 	pb.UnimplementedUserServer
-	db *gorm.DB
+	db         *gorm.DB
+	emailNotif service.EmailNotifService
 }
 
 func NewUserHandler(db *gorm.DB) *UserHandler {
 	return &UserHandler{
-		db: db,
+		db:         db,
+		emailNotif: service.NewEmailNotifService(),
 	}
 }
 
@@ -67,6 +70,8 @@ func (u *UserHandler) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 	if err != nil {
 		return nil, err
 	}
+	// notify email
+	u.emailNotif.NotifyRegister(int(user.ID))
 
 	return &pb.UserResponse{
 		Username:    user.Username,

@@ -8,6 +8,9 @@ import (
 	"errors"
 	"fmt"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 )
@@ -181,10 +184,29 @@ func (lh *LocationHandler) GetLocationRecommendation(ctx context.Context, req *p
 		return nil, errors.New("business facility id is required")
 	}
 
+	// validate token and get user
+	user, err := lh.userService.ValidateAndGetUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+	}
+
 	//get initial location where business facility is located
-	businessFacility, err := lh.businessFacilityService.GetBusinessFacilityByID(int(req.BusinessId))
+	// need to attach token to outgoing context
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("failed to extract metadata")
+	}
+
+	// Step 2: Create a new outgoing context with the extracted metadata
+	outCtx := metadata.NewOutgoingContext(ctx, md)
+	businessFacility, err := lh.businessFacilityService.GetBusinessFacilityByID(outCtx, int(req.BusinessId))
 	if err != nil {
 		return nil, errors.New("business facility not found" + err.Error())
+	}
+
+	// ensure business facility belongs to user
+	if businessFacility.UserID != uint64(user.ID) {
+		return nil, errors.New("business facility doesn't belong to user")
 	}
 
 	//find the location based on location ID provided
