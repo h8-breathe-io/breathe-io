@@ -4,8 +4,8 @@ PROJECT_ID=breathe-io
 SERVICE_NAME=subs-payment-service
 IMAGE_NAME=gcr.io/$(PROJECT_ID)/$(SERVICE_NAME)
 DB_HOST=34.101.36.131
-USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:8080
-EMAIL_NOTIF_URL=email-notif-service-43931901018.asia-southeast2.run.app:8080
+USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:443
+EMAIL_NOTIF_URL=email-notif-service-43931901018.asia-southeast2.run.app:443
 API_GATEWAY=https://api-gateway-43931901018.asia-southeast2.run.app
 
 protoc:

@@ -3,11 +3,13 @@ package service
 import (
 	pb "air-quality-service/pb/generated"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"log"
 	"os"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type EmailNotifService interface {
@@ -20,7 +22,16 @@ func NewEmailNotifClient() pb.EmailNotifServiceClient {
 	addr := os.Getenv("EMAIL_NOTIF_URL")
 	log.Printf("email-notif service url: %s", addr)
 	// Set up a connection to the server.
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts := []grpc.DialOption{}
+	systemRoots, err := x509.SystemCertPool()
+	if err != nil {
+		log.Fatalf("filed to get certs: %v", err)
+	}
+	cred := credentials.NewTLS(&tls.Config{
+		RootCAs: systemRoots,
+	})
+	opts = append(opts, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

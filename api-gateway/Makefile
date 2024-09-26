@@ -3,10 +3,10 @@ include .env
 PROJECT_ID=breathe-io
 SERVICE_NAME=api-gateway
 IMAGE_NAME=gcr.io/$(PROJECT_ID)/$(SERVICE_NAME)
-USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:8080
-SUBS_PAYMENT_SERVICE_URL=subs-payment-service-43931901018.asia-southeast2.run.app:8080
-AIR_QUALITY_SERVICE_URL=air-quality-service-43931901018.asia-southeast2.run.app:8080
-REPORT_SERVICE_URL=reporting-43931901018.asia-southeast2.run.app:8080
+USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:443
+SUBS_PAYMENT_SERVICE_URL=subs-payment-service-43931901018.asia-southeast2.run.app:443
+AIR_QUALITY_SERVICE_URL=air-quality-service-43931901018.asia-southeast2.run.app:443
+REPORT_SERVICE_URL=reporting-43931901018.asia-southeast2.run.app:443
 
 protoc:
 	protoc subs-payment.proto --proto_path ../subs-payment-service/proto --go_out . --go-grpc_out .

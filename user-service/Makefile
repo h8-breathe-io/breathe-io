@@ -4,8 +4,8 @@ PROJECT_ID=breathe-io
 SERVICE_NAME=user-service
 IMAGE_NAME=gcr.io/$(PROJECT_ID)/$(SERVICE_NAME)
 DB_HOST=34.101.36.131
-EMAIL_NOTIF_URL=email-notif-service-43931901018.asia-southeast2.run.app:8080
-LOCATION_GRPC_ADDR=air-quality-service-43931901018.asia-southeast2.run.app:8080
+EMAIL_NOTIF_URL=email-notif-service-43931901018.asia-southeast2.run.app:443
+LOCATION_GRPC_ADDR=air-quality-service-43931901018.asia-southeast2.run.app:443
 
 protoc:
 	protoc --proto_path=pb pb/*.proto --go_out=paths=source_relative:pb/generated --go-grpc_out=paths=source_relative:pb/generated

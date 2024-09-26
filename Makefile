@@ -23,3 +23,9 @@ cloud:
 		echo "Building $$service..."; \
 		$(MAKE) -C $$service cloud; \
 	done
+
+cloud_run:
+	@for service in $(SERVICES); do \
+		echo "deploy run $$service..."; \
+		$(MAKE) -C $$service cloud_run; \
+	done
