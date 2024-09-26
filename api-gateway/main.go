@@ -301,6 +301,25 @@ func (h *handler) HandleSaveAirQualities(c echo.Context) error {
 
 }
 
+func (h *handler) HandleSaveAirQualitiesHistorical(c echo.Context) error {
+	var req pb.SaveHistoricalAirQualitiesRequest
+	err := c.Bind(&req)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
+	}
+
+	ctx := h.createContext(c)
+	res, err := h.aqClient.SaveHistoricalAirQualities(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
 func (h *handler) HandleGetAirQualities(c echo.Context) error {
 	locId := c.QueryParam("locId")
 	startDate := c.QueryParam("startDate")
@@ -555,6 +574,7 @@ func main() {
 	aq := e.Group("/air-qualities")
 	aq.POST("", handler.HandleSaveAirQualities)
 	aq.GET("", handler.HandleGetAirQualities)
+	aq.POST("/historical", handler.HandleSaveAirQualitiesHistorical)
 
 	// business facilities
 	bf := e.Group("/business-facilities")
