@@ -174,7 +174,7 @@ func (es *EmailNotifServer) NotifyAirQuality(c context.Context, req *pb.NotifyAi
 	}
 
 	// if <=100 still considered healthy
-	if aq.Aqi <= 100 {
+	if aq.Aqi <= 3 {
 		return &pb.NotifyAirQualityResp{Status: "Not Sent", Email: user.Email}, nil
 	}
 
