@@ -52,8 +52,7 @@ type AirQuality struct {
 	CreatedAt  time.Time
 }
 
-
 // Tentukan nama tabel secara eksplisit
 func (AirQuality) TableName() string {
-    return "air_quality" // Ini memastikan bahwa GORM menggunakan tabel "air_quality"
+	return "air_qualities" // Ini memastikan bahwa GORM menggunakan tabel "air_quality"
 }
