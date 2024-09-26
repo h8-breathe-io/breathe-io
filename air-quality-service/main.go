@@ -5,15 +5,12 @@ import (
 	"air-quality-service/handler"
 	pb "air-quality-service/pb/generated"
 	"air-quality-service/service"
-	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 
-	"github.com/robfig/cron/v3"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func main() {
@@ -29,27 +26,6 @@ func main() {
 
 	pb.RegisterAirQualityServiceServer(grpcServer, airQualityHandler)
 	pb.RegisterLocationServiceServer(grpcServer, locationHandler)
-
-	//declare cron services
-	c := cron.New()
-	//running cron job exactly every start of the
-	c.AddFunc("0 0 * * * *", func() {
-		//Get All Locations
-		res, err := locationHandler.GetLocations(context.TODO(), &emptypb.Empty{})
-		if err != nil {
-			log.Printf("Cron Error when getting all locations: %v\n", err)
-		}
-
-		//Get New AQ Data for each location
-		for _, location := range res.Locations {
-			fmt.Println("Getting air quality data for location with ID ", location.LocationId)
-			_, err := airQualityHandler.SaveAirQualities(context.TODO(), &pb.SaveAirQualitiesRequest{Latitude: location.Latitude, Longitude: location.Longitude})
-			if err != nil {
-				log.Printf("Cron Error when getting new AQ data for location %s: %v\n", location.LocationName, err)
-			}
-		}
-	})
-	c.Start()
 
 	port := os.Getenv("PORT")
 	if port == "" {

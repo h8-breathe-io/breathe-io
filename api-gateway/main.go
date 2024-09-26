@@ -14,12 +14,14 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/robfig/cron/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "api-gateway/pb"
+	"api-gateway/service"
 	"api-gateway/util"
 )
 
@@ -531,6 +533,15 @@ func main() {
 		locClient:         NewLocClient(),
 		reportService:     NewReportClient(),
 	}
+
+	cs := service.NewCronServices(NewAQClient(), NewLocClient())
+	//declare cron services
+	c := cron.New()
+	//running cron job exactly every start of the
+	c.AddFunc("*/1 * * * *", func() {
+		cs.RenewAQData()
+	})
+	c.Start()
 
 	e := echo.New()
 
