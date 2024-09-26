@@ -163,7 +163,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 
 	// generate payment and invoice
 	newPayment := &model.Payment{
-		UserID:         int(req.UserId),
+		UserID:         user.ID,
 		PaymentGateway: "xendit",
 		Amount:         sub.PricePerMonth * float64(req.Duration),
 		Currency:       "IDR",

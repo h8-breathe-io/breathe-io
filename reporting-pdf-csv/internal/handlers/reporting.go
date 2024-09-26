@@ -77,7 +77,7 @@ func (s *ReportService) GenerateReport(ctx context.Context, req *pb.ReportReques
 		Joins("LEFT JOIN business_facilities bf ON u.id = bf.user_id").
 		Joins("LEFT JOIN user_location ul ON u.id = ul.user_id").
 		Joins("LEFT JOIN locations l ON ul.location_id = l.id").
-		Joins("LEFT JOIN air_quality aq ON l.id = aq.location_id").
+		Joins("LEFT JOIN air_qualities aq ON l.id = aq.location_id").
 		Where("u.id = ?", userID)
 
 	// Add date filtering if start_date and end_date are provided
