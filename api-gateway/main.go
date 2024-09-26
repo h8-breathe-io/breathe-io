@@ -16,7 +16,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -28,7 +27,16 @@ func NewSubsPaymentClient() pb.SubPaymentClient {
 	addr := os.Getenv("SUBS_PAYMENT_SERVICE_URL")
 	log.Printf("subs-payment service url: %s", addr)
 	// Set up a connection to the server.
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts := []grpc.DialOption{}
+	systemRoots, err := x509.SystemCertPool()
+	if err != nil {
+		log.Fatalf("filed to get certs: %v", err)
+	}
+	cred := credentials.NewTLS(&tls.Config{
+		RootCAs: systemRoots,
+	})
+	opts = append(opts, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
