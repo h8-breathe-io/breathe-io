@@ -4,6 +4,7 @@ PROJECT_ID=breathe-io
 SERVICE_NAME=reporting
 IMAGE_NAME=gcr.io/$(PROJECT_ID)/$(SERVICE_NAME)
 DB_HOST=34.101.36.131
+USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:443
 
 protoc:
 	protoc reporting.proto --proto_path proto --go_out . --go-grpc_out .
@@ -23,5 +24,6 @@ cloud_run:
 		--set-env-vars DB_USER=postgres \
 		--set-env-vars DB_PASSWORD=$(DB_PASSWORD) \
 		--set-env-vars TOKEN_GPT=$(TOKEN_GPT) \
+		--set-env-vars USER_SERVICE_URL=$(USER_SERVICE_URL)
 
 cloud:protoc build_push cloud_run

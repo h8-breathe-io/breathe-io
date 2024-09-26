@@ -570,6 +570,9 @@ func main() {
 	l.GET("", handler.HandleGetLocations)
 	l.GET("/:id", handler.HandleGetLocation)
 
+	// reporting
+	e.POST("/reports", handler.HandleGenerateReport)
+
 	// start server
 	log.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))))
 }
