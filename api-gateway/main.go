@@ -73,7 +73,7 @@ func NewUserClient() pb.UserClient {
 
 func NewAQClient() pb.AirQualityServiceClient {
 	addr := os.Getenv("AIR_QUALITY_SERVICE_URL")
-	log.Printf("user service url: %s", addr)
+	log.Printf("aq service url: %s", addr)
 	// Set up a connection to the server.
 	opts := []grpc.DialOption{}
 	systemRoots, err := x509.SystemCertPool()
@@ -96,7 +96,7 @@ func NewAQClient() pb.AirQualityServiceClient {
 
 func NewBFClient() pb.BusinessFacilitiesClient {
 	addr := os.Getenv("BUSINESS_FACILITIES_SERVICE_URL")
-	log.Printf("user service url: %s", addr)
+	log.Printf("bf service url: %s", addr)
 	// Set up a connection to the server.
 	opts := []grpc.DialOption{}
 	systemRoots, err := x509.SystemCertPool()
@@ -119,7 +119,7 @@ func NewBFClient() pb.BusinessFacilitiesClient {
 
 func NewLocClient() pb.LocationServiceClient {
 	addr := os.Getenv("LOCATION_SERVICE_URL")
-	log.Printf("user service url: %s", addr)
+	log.Printf("loc service url: %s", addr)
 	// Set up a connection to the server.
 	opts := []grpc.DialOption{}
 	systemRoots, err := x509.SystemCertPool()
@@ -142,7 +142,7 @@ func NewLocClient() pb.LocationServiceClient {
 
 func NewReportClient() pb.ReportServiceClient {
 	addr := os.Getenv("REPORT_SERVICE_URL")
-	log.Printf("user service url: %s", addr)
+	log.Printf("report service url: %s", addr)
 	// Set up a connection to the server.
 	opts := []grpc.DialOption{}
 	systemRoots, err := x509.SystemCertPool()
