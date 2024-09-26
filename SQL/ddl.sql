@@ -3,11 +3,13 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    phonenumber VARCHAR(15) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     tier VARCHAR(20) CHECK (tier IN ('free', 'business')) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- Create Locations Table to store user's saved locations
 CREATE TABLE locations (
@@ -44,23 +46,44 @@ CREATE TABLE air_quality (
     id SERIAL PRIMARY KEY,
     location_id INT REFERENCES locations(id) ON DELETE CASCADE,
     aqi INT NOT NULL,  -- Air Quality Index
+    co DECIMAL(5,2),    -- Carbon Monoxide
+    no DECIMAL(5,2), -- Nitrogen Monoxide
+    no2 DECIMAL(5,2),   -- Nitrogen Dioxide
+    o3 DECIMAL(5,2),    -- Ozone
+    so2 DECIMAL(5,2),   -- Sulfur Dioxide
     pm25 DECIMAL(5,2),  -- Particulate matter <2.5 micrometers
     pm10 DECIMAL(5,2),  -- Particulate matter <10 micrometers
-    o3 DECIMAL(5,2),    -- Ozone
-    no2 DECIMAL(5,2),   -- Nitrogen Dioxide
-    so2 DECIMAL(5,2),   -- Sulfur Dioxide
-    co DECIMAL(5,2),    -- Carbon Monoxide
+    nh3 DECIMAL(5,2), -- Ammonia
     fetch_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
 -- Create Payments Table for storing payment transactions for Business Tier users
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
     payment_gateway VARCHAR(50) NOT NULL,  -- e.g., 'xendit'
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(10) NOT NULL,
-    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')) NOT NULL
+    transaction_date TIMESTAMP, -- filled after payment made
+    status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')) NOT NULL,
+    url TEXT NOT NULL -- stores url to payment page
+);
+
+-- Stores subscription tiers and their details
+CREATE TABLE subscriptions (
+    id SERIAL PRIMARY KEY,
+    tier VARCHAR(50) NOT NULL UNIQUE, -- e.g business
+    price_per_month DECIMAL(10,2) NOT NULL
+);
+
+-- Stores user subscriptions 
+CREATE TABLE user_subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    subscription_id INT REFERENCES subscriptions(id) ON DELETE CASCADE,
+    duration INT NOT NULL,
+    end_date TIMESTAMP,
+    payment_id INT REFERENCES payments(id) NOT NULL
 );

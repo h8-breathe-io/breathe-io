@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package reporting;
+
+// import "google/protobuf/timestamp.proto";
+
+option go_package = "/proto/pb";
+
+service ReportService {
+    rpc GenerateReport(ReportRequest) returns (ReportResponse);
+}
+
+message ReportRequest {
+    string tier = 1 [deprecated = true];          // Specify the user tier to filter data (e.g., 'free', 'business')
+    string start_date = 2;     // String format of start date (RFC3339)
+    string end_date = 3;       // String format of end date (RFC3339)
+}
+
+message ReportResponse {
+    string csv_location = 1;   // Directory location of the generated CSV file
+    string pdf_location = 2;   // Directory location of the generated PDF file
+}

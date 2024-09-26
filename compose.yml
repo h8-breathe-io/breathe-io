@@ -1,0 +1,95 @@
+version: '3'
+services:
+  api_gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
+      - AIR_QUALITY_SERVICE_URL=air-quality-service:50004
+      - LOCATION_SERVICE_URL=air-quality-service:50004
+      - BUSINESS_FACILITIES_SERVICE_URL=user-service:50003
+      - REPORT_SERVICE_URL=localhost:50005
+    depends_on:
+      - subs_payment_service
+      - email_notif_service
+      - user_service
+      - air_quality_service
+  
+  subs_payment_service:
+    build: ./subs-payment-service
+    container_name: subs-payment-service
+    expose:
+      - 50001
+    env_file:
+      - ./subs-payment-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - user_service
+
+  email_notif_service:
+    build: ./email-notif-service
+    container_name: email-notif-service
+    expose:
+      - 50002
+    env_file:
+      - ./email-notif-service/.env
+    environment:
+      - SUBS_PAYMENT_SERVICE_URL=subs-payment-service:50001
+      - AIR_QUALITY_SERVICE=air-quality-service:50004
+
+  user_service:
+    build: ./user-service
+    container_name: user-service
+    expose:
+      - 50003
+    env_file:
+      - ./user-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - LOCATION_GRPC_ADDR=air-quality-service:50004
+      - PORT=50003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  air_quality_service:
+    build: ./air-quality-service
+    container_name: air-quality-service
+    expose:
+      - 50004
+    env_file:
+      - ./air-quality-service/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
+      - BUSINESS_FACILITY_SERVICE_URL=user-service:50003
+      - PORT=50004
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - user_service
+
+  report_service:
+    build: ./reporting-pdf-csv
+    container_name: report-service
+    expose:
+      - 50005
+    env_file:
+      - ./reporting-pdf-csv/.env
+    environment:
+      - DB_HOST=host.docker.internal
+      - EMAIL_NOTIF_URL=email-notif-service:50002
+      - USER_SERVICE_URL=user-service:50003
+      - PORT=50005
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    

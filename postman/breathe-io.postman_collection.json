@@ -1,0 +1,502 @@
+{
+	"info": {
+		"_postman_id": "c0e9c26a-60fd-4156-87c3-a77e7e8cdfcd",
+		"name": "breathe-io",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25230653"
+	},
+	"item": [
+		{
+			"name": "subs-payment",
+			"item": [
+				{
+					"name": "user-subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"duration\": 2,\n    \"tier\": \"business\",\n    \"user_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user-subscriptions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"user-subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "complete-payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-callback-token",
+								"value": "{{xendit-callback-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"579c8d61f23fa4ca35e52da4\",\n    \"external_id\": \"17\",\n    \"user_id\": \"5781d19b2e2385880609791c\",\n    \"is_high\": true,\n    \"payment_method\": \"BANK_TRANSFER\",\n    \"status\": \"PAID\",\n    \"merchant_name\": \"Xendit\",\n    \"amount\": 50000,\n    \"paid_amount\": 50000,\n    \"bank_code\": \"PERMATA\",\n    \"paid_at\": \"2016-10-12T08:15:03.404Z\",\n    \"payer_email\": \"wildan@xendit.co\",\n    \"description\": \"This is a description\",\n    \"adjusted_received_amount\": 47500,\n    \"fees_paid_amount\": 0,\n    \"updated\": \"2016-10-10T08:15:03.404Z\",\n    \"created\": \"2016-10-10T08:15:03.404Z\",\n    \"currency\": \"IDR\",\n    \"payment_channel\": \"PERMATA\",\n    \"payment_destination\": \"888888888888\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payment-callback",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"payment-callback"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-callback-token",
+								"value": "{{xendit-callback-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Razif\",\n    \"email\": \"razif.dev@gmail.com\",\n    \"phonenumber\" : \"987654321\",\n    \"Password\" : \"pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-callback-token",
+								"value": "{{xendit-callback-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"razif.dev@gmail.com\",\n    \"Password\" : \"pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "air-qualities",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities?locId=2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities"
+							],
+							"query": [
+								{
+									"key": "locId",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"latitude\": -6.200000,\n    \"longitude\": 106.816666\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "business-facilities",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_type\": \"Manufacturing\",\n  \"total_emission\": 15000.75,\n  \"location_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"company_type\": \"Modified type\",\n  \"total_emission\": 123.45,\n  \"location_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": ":id/recommendation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/business-facilities/5/recommendation",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"business-facilities",
+								"5",
+								"recommendation"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "locations",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/locations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"locations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/locations/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"locations",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "localhost:8080",
+			"type": "string"
+		}
+	]
+}
