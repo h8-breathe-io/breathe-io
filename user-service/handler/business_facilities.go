@@ -94,9 +94,19 @@ func (bf *BusinessFacilityHandler) GetBusinessFacilities(ctx context.Context, re
 
 	//get all business facilities of the user
 	var businessFacilities []model.BusinessFacility
-	err = bf.db.Where("user_id = ?", user.ID).Find(&businessFacilities).Error
-	if err != nil {
-		return nil, errors.New("failed to get business facilities")
+	if user.ID == 0 && user.Username == "ServiceAccount" {
+		// services accounts can get all
+		err = bf.db.Find(&businessFacilities).Error
+		if err != nil {
+			return nil, errors.New("failed to get business facilities")
+		}
+
+	} else {
+		err = bf.db.Where("user_id = ?", user.ID).Find(&businessFacilities).Error
+		if err != nil {
+			return nil, errors.New("failed to get business facilities")
+		}
+
 	}
 
 	res := &pb.BFResponses{

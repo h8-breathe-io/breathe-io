@@ -559,11 +559,12 @@ func main() {
 		reportService:     NewReportClient(),
 	}
 
-	cs := service.NewCronServices(NewAQClient(), NewLocClient())
+	cs := service.NewCronServices(NewAQClient(), NewLocClient(), NewBFClient())
 	//declare cron services
 	c := cron.New()
 	//running cron job exactly every start of the
 	c.AddFunc("*/15 * * * *", func() {
+		cs.RenewBFAQData()
 		cs.RenewAQData()
 	})
 	c.Start()
