@@ -7,6 +7,7 @@ DB_HOST=34.101.36.131
 USER_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:443
 SUBS_PAYMENT_SERVICE_URL=subs-payment-service-43931901018.asia-southeast2.run.app:443
 EMAIL_NOTIF_URL=email-notif-service-43931901018.asia-southeast2.run.app:443
+BF_SERVICE_URL=user-service-43931901018.asia-southeast2.run.app:443
 
 protoc:
 	protoc --proto_path=pb pb/*.proto --go_out=paths=source_relative:pb/generated --go-grpc_out=paths=source_relative:pb/generated
@@ -32,6 +33,8 @@ cloud_run:
 		--set-env-vars OPEN_WEATHER_BASE_URL=$(OPEN_WEATHER_BASE_URL) \
 		--set-env-vars EMAIL_NOTIF_URL=$(EMAIL_NOTIF_URL) \
 		--set-env-vars USER_SERVICE_URL=$(USER_SERVICE_URL) \
-		--set-env-vars BUSINESS_FACILITY_SERVICE_URL=$(USER_SERVICE_URL)
+		--set-env-vars BUSINESS_FACILITY_SERVICE_URL=$(USER_SERVICE_URL) \
+		--set-env-vars BF_SERVICE_URL=$(BF_SERVICE_URL) \
+		--set-env-vars SERVICE_TOKEN=$(SERVICE_TOKEN)
 
 cloud:protoc build_push cloud_run

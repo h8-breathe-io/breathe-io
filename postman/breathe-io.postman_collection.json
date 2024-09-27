@@ -120,7 +120,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"Razif\",\n    \"email\": \"razif.dev@gmail.com\",\n    \"phonenumber\" : \"987654321\",\n    \"Password\" : \"pass\"\n}",
+							"raw": "{\n    \"username\": \"Razif\",\n    \"email\": \"razif.dev@gmail.com\",\n    \"phonenumber\" : \"98765432\",\n    \"Password\" : \"pass\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -172,6 +172,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -184,7 +212,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/air-qualities?locId=2",
+							"raw": "{{baseUrl}}/air-qualities?locId=3",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -194,7 +222,7 @@
 							"query": [
 								{
 									"key": "locId",
-									"value": "2"
+									"value": "3"
 								}
 							]
 						}
@@ -218,7 +246,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"latitude\": -6.200000,\n    \"longitude\": 106.816666\n}",
+							"raw": "{\n    \"latitude\": -6.200003,\n    \"longitude\": 106.816777\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -232,6 +260,80 @@
 							],
 							"path": [
 								"air-qualities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"business_id\": 4\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities/business",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities",
+								"business"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/historical",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"startDate\": \"2024-09-01\",\n    \"endDate\": \"2024-09-26\",\n    \"latitude\": -6.402905,\n    \"longitude\": 106.778419\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/air-qualities/historical",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"air-qualities",
+								"historical"
 							]
 						}
 					},
@@ -286,7 +388,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"company_type\": \"Manufacturing\",\n  \"total_emission\": 15000.75,\n  \"location_id\": 1\n}",
+							"raw": "{\n  \"company_type\": \"Manufacturing 4\",\n  \"total_emission\": 2000,\n  \"location_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -321,13 +423,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/4",
+							"raw": "{{baseUrl}}/business-facilities/3",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"4"
+								"3"
 							]
 						}
 					},
@@ -358,13 +460,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/4",
+							"raw": "{{baseUrl}}/business-facilities/3",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"4"
+								"3"
 							]
 						}
 					},
@@ -386,13 +488,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/4",
+							"raw": "{{baseUrl}}/business-facilities/3",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"4"
+								"3"
 							]
 						}
 					},
@@ -414,13 +516,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/business-facilities/5/recommendation",
+							"raw": "{{baseUrl}}/business-facilities/4/recommendation",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"business-facilities",
-								"5",
+								"4",
 								"recommendation"
 							]
 						}
@@ -468,6 +570,38 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "reports",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reports",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reports"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -495,7 +629,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "localhost:8080",
+			"value": "https://api-gateway-43931901018.asia-southeast2.run.app",
 			"type": "string"
 		}
 	]

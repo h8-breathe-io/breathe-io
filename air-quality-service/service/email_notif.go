@@ -16,6 +16,7 @@ type EmailNotifService interface {
 	NotifyPaymentSucccess(paymentID int)
 	NotifyRegister(userID int)
 	NotifyAirQuality(userID int, airQualityID int)
+	NotifyAirQualityBusiness(businessID int, airQualityID int)
 }
 
 func NewEmailNotifClient() pb.EmailNotifServiceClient {
@@ -49,6 +50,21 @@ func NewEmailNotifService() EmailNotifService {
 
 type emailNotifService struct {
 	emailNotifClient pb.EmailNotifServiceClient
+}
+
+// NotifyAirQualityBusiness implements EmailNotifService.
+func (es *emailNotifService) NotifyAirQualityBusiness(businessID int, airQualityID int) {
+	go func() {
+		res, err := es.emailNotifClient.NotifyAirQualityBusiness(context.TODO(), &pb.NotifyAirQualityBusinessReq{
+			BusinessId:   int64(businessID),
+			AirQualityId: int64(airQualityID),
+		})
+		if err != nil {
+			log.Printf("notify aq business email failed: %s ", err.Error())
+			return
+		}
+		log.Printf("notify aq business emailcomplete: %v ", res)
+	}()
 }
 
 // NotifyAirQuality implements EmailNotifService.

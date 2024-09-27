@@ -66,6 +66,26 @@ func (lh *LocationHandler) AddLocation(ctx context.Context, req *pb.AddLocationR
 	}, nil
 }
 
+func GetLocationByID(id int, db *gorm.DB) (*pb.LocationResponse, error) {
+	// validate ID if valid
+	if id == 0 {
+		return nil, errors.New("location id is required")
+	}
+
+	var location model.Location
+	err := db.Where("id=?", id).First(&location).Error
+	if err != nil {
+		return nil, errors.New("location not found")
+	}
+
+	return &pb.LocationResponse{
+		LocationId:   uint64(location.ID),
+		LocationName: location.LocationName,
+		Latitude:     location.Latitude,
+		Longitude:    location.Longitude,
+	}, nil
+}
+
 func (lh *LocationHandler) GetLocation(ctx context.Context, req *pb.GetLocationRequest) (*pb.LocationResponse, error) {
 	//validate ID if valid
 	if req.LocationId == 0 {

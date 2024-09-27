@@ -27,7 +27,8 @@ cloud_run:
 		--set-env-vars JWT_SECRET=$(JWT_SECRET) \
 		--set-env-vars DB_PASS=$(DB_PASS) \
 		--set-env-vars EMAIL_NOTIF_URL=$(EMAIL_NOTIF_URL) \
-		--set-env-vars LOCATION_GRPC_ADDR=$(LOCATION_GRPC_ADDR)
+		--set-env-vars LOCATION_GRPC_ADDR=$(LOCATION_GRPC_ADDR) \
+		--set-env-vars SERVICE_TOKEN=$(SERVICE_TOKEN)
 
 
 cloud:protoc build_push cloud_run

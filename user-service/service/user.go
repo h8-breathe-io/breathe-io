@@ -89,6 +89,14 @@ func (u *userService) ValidateAndGetUser(c context.Context) (*model.User, error)
 		return nil, err
 	}
 
+	if token == os.Getenv("SERVICE_TOKEN") {
+		log.Print("Service account found")
+		// TODO return dummy user?
+		return &model.User{
+			Username: "ServiceAccount",
+		}, nil
+	}
+
 	// call user Service
 	user, err := u.IsValidToken(token)
 	if err != nil {

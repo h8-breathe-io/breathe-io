@@ -29,6 +29,7 @@ cloud_run:
 		--set-env-vars SUBS_PAYMENT_SERVICE_URL=$(SUBS_PAYMENT_SERVICE_URL) \
 		--set-env-vars AIR_QUALITY_SERVICE_URL=$(AIR_QUALITY_SERVICE_URL) \
 		--set-env-vars USER_SERVICE_URL=$(USER_SERVICE_URL) \
-		--set-env-vars REPORT_SERVICE_URL=$(REPORT_SERVICE_URL)
+		--set-env-vars REPORT_SERVICE_URL=$(REPORT_SERVICE_URL) \
+		--set-env-vars AQ_SERVICE_TOKEN=$(AQ_SERVICE_TOKEN)
 
 cloud:protoc build_push cloud_run
