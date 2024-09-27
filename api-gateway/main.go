@@ -563,7 +563,7 @@ func main() {
 	//declare cron services
 	c := cron.New()
 	//running cron job exactly every start of the
-	c.AddFunc("0 0 * * * *", func() {
+	c.AddFunc("0 * * * *", func() {
 		cs.RenewBFAQData()
 		cs.RenewAQData()
 	})
