@@ -53,6 +53,7 @@ type UserService interface {
 	GetUserByID(id int) (*User, error)
 	IsValidToken(token string) (*User, error)
 	ValidateAndGetUser(c context.Context) (*User, error)
+	UpdateUser(user *User) (*User, error)
 }
 
 func NewUserService() UserService {
@@ -63,6 +64,28 @@ func NewUserService() UserService {
 
 type userService struct {
 	userClient pb.UserClient
+}
+
+// UpdateUser implements UserService.
+func (u *userService) UpdateUser(user *User) (*User, error) {
+	res, err := u.userClient.UpdateUser(context.TODO(), &pb.UpdateUserRequest{
+		Username:    user.Username,
+		Email:       user.Email,
+		Phonenumber: user.PhoneNumber,
+		Tier:        user.Tier,
+		Id:          uint64(user.ID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:          int(res.Id),
+		Username:    res.Username,
+		Email:       res.Email,
+		PhoneNumber: res.Phonenumber,
+		Tier:        res.Tier,
+	}, nil
 }
 
 // GetUserByID implements UserService.
