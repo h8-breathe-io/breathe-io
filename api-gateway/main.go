@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -17,7 +16,6 @@ import (
 	"github.com/robfig/cron/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "api-gateway/pb"
@@ -174,28 +172,6 @@ type handler struct {
 	reportService     pb.ReportServiceClient
 }
 
-func (h *handler) createContext(c echo.Context) context.Context {
-	//get token from header
-
-	authHeader := c.Request().Header.Get("Authorization")
-
-	// Check if the header is in the correct format
-	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		log.Print("No token found, returning empty context")
-		// if not return emtpty context
-		return context.TODO()
-	}
-
-	// Extract the token part from the header (after "Bearer ")
-	token := strings.TrimPrefix(authHeader, "Bearer ")
-	log.Printf("Token found '%s', attaching to context", token)
-	// attach token to context
-	md := metadata.Pairs("auth_token", token)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	return ctx
-}
-
 func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
 	// pb definitions have json annotations, can use it directly
 	var req pb.CreateUserSubcriptionReq
@@ -204,7 +180,7 @@ func (h *handler) HandleCreateUserSubscription(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	// forward
 	req.UserId = 1
 	res, err := h.subsPaymentCLient.CreateUserSubcription(
@@ -290,7 +266,7 @@ func (h *handler) HandleSaveAirQualities(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.aqClient.SaveAirQualities(
 		ctx,
 		&req,
@@ -318,7 +294,7 @@ func (h *handler) HandleGetAirQualities(c echo.Context) error {
 	req.StartDate = startDate
 	req.EndDate = endDate
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.aqClient.GetAirQualities(
 		ctx,
 		&req,
@@ -338,7 +314,7 @@ func (h *handler) HandleAddBusinessFacility(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.bfClient.AddBusinessFacility(
 		ctx,
 		&req,
@@ -357,7 +333,7 @@ func (h *handler) HandleGetBusinessFacilities(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.bfClient.GetBusinessFacilities(
 		ctx,
 		&req,
@@ -380,7 +356,7 @@ func (h *handler) HandleGetBusinessFacility(c echo.Context) error {
 	var req pb.GetBFRequest
 	req.Id = uint64(bfId)
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.bfClient.GetBusinessFacility(
 		ctx,
 		&req,
@@ -407,7 +383,7 @@ func (h *handler) HandleUpdateBusinessFacility(c echo.Context) error {
 	}
 	req.Id = uint64(bfId)
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.bfClient.UpdateBusinessFacility(
 		ctx,
 		&req,
@@ -430,7 +406,7 @@ func (h *handler) HandleDeleteBusinessFacility(c echo.Context) error {
 	var req pb.DeleteBFRequest
 	req.Id = uint64(bfId)
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.bfClient.DeleteBusinessFacility(
 		ctx,
 		&req,
@@ -444,7 +420,7 @@ func (h *handler) HandleDeleteBusinessFacility(c echo.Context) error {
 
 func (h *handler) HandleGetLocations(c echo.Context) error {
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.locClient.GetLocations(
 		ctx,
 		&emptypb.Empty{},
@@ -467,7 +443,7 @@ func (h *handler) HandleGetLocation(c echo.Context) error {
 	var req pb.GetLocationRequest
 	req.LocationId = uint64(bfId)
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.locClient.GetLocation(
 		ctx,
 		&req,
@@ -490,7 +466,7 @@ func (h *handler) HandleGetLocationRecommendation(c echo.Context) error {
 	var req pb.LocationRecommendationRequest
 	req.BusinessId = uint64(bfId)
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.locClient.GetLocationRecommendation(
 		ctx,
 		&req,
@@ -510,7 +486,7 @@ func (h *handler) HandleGenerateReport(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid body")
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.reportService.GenerateReport(
 		ctx,
 		&req,
