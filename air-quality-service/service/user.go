@@ -127,7 +127,14 @@ func (u *userService) ValidateAndGetUser(c context.Context) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// check if service token
+	if token == os.Getenv("AQ_SERVICE_TOKEN") {
+		// TODO return dummy user?
+		return &User{
+			ID:       0,
+			Username: "ServiceAccount",
+		}, nil
+	}
 	// call user Service
 	user, err := u.IsValidToken(token)
 	if err != nil {
