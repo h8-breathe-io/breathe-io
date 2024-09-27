@@ -24,6 +24,7 @@ type AirQualityHandler struct {
 	airQualityService *service.AirQualityService
 	userService       service.UserService
 	emailNotif        service.EmailNotifService
+	bfService         service.BusinessFacilityService
 }
 
 func NewAirQualityHandler(db *gorm.DB, airQualityService *service.AirQualityService) *AirQualityHandler {
@@ -32,6 +33,7 @@ func NewAirQualityHandler(db *gorm.DB, airQualityService *service.AirQualityServ
 		airQualityService: airQualityService,
 		userService:       service.NewUserService(),
 		emailNotif:        service.NewEmailNotifService(),
+		bfService:         service.NewBusinessFacilityService(),
 	}
 }
 
@@ -326,6 +328,19 @@ func (ah *AirQualityHandler) GetAirQualityByID(c context.Context, req *pb.GetAir
 	}
 
 	fetchedTime := airQuality.FetchTime.Format("2006-01-02 15:04:05")
+
+	// get loc
+	loc, _ := GetLocationByID(airQuality.LocationID, ah.db)
+	var l *pb.Location
+	if loc != nil {
+		l = &pb.Location{
+			LocationId:   loc.LocationId,
+			LocationName: loc.LocationName,
+			Latitude:     loc.Latitude,
+			Longitude:    loc.Longitude,
+		}
+	}
+
 	return &pb.GetAirQualityByIDResp{
 		AirQuality: &pb.AirQuality{
 			Id:         uint64(airQuality.ID),
@@ -340,5 +355,79 @@ func (ah *AirQualityHandler) GetAirQualityByID(c context.Context, req *pb.GetAir
 			Pm10:       airQuality.PM10,
 			Nh3:        airQuality.NH3,
 			FetchTime:  fetchedTime,
-		}}, nil
+		},
+		Loc: l}, nil
+}
+
+func (ah *AirQualityHandler) SaveAirQualityForBusiness(ctx context.Context, req *pb.SaveAirQualityForBusinessReq) (*pb.SaveAirQualityForBusinessResp, error) {
+	// method to be triggered by scheduler
+	octx := util.CreateServiceContext()
+	//get business
+	bf, err := ah.bfService.GetBusinessFacilityByID(octx, int(req.BusinessId))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get business: %s", err.Error())
+	}
+
+	// get loc
+	loc, err := GetLocationByID(int(bf.LocationID), ah.db)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get location: %s", err.Error())
+	}
+
+	//fetch air quality data
+	airQuality, err := ah.airQualityService.FetchAirQuality(strconv.FormatFloat(loc.Latitude, 'f', -1, 64), strconv.FormatFloat(loc.Longitude, 'f', -1, 64))
+	if err != nil {
+		return nil, errors.New("failed to fetch air quality data")
+	}
+
+	// fmt.Println(airQuality)
+
+	//store data to db
+	var airQualities []model.AirQuality
+	createdTime := time.Now()
+	for _, data := range airQuality.List {
+		fetchedTime := time.Unix(data.Dt, 0).UTC()
+		airQuality := model.AirQuality{
+			LocationID: int(loc.LocationId), //from searching result
+			AQI:        data.Main.Aqi,
+			CO:         data.Components.Co,
+			NO:         data.Components.No,
+			NO2:        data.Components.No2,
+			O3:         data.Components.O3,
+			SO2:        data.Components.So2,
+			PM25:       data.Components.Pm25,
+			PM10:       data.Components.Pm10,
+			NH3:        data.Components.Nh3,
+			CreatedAt:  &createdTime,
+			FetchTime:  &fetchedTime,
+		}
+		airQualities = append(airQualities, airQuality)
+	}
+
+	if err := ah.db.Create(&airQualities).Error; err != nil {
+		return nil, errors.New("failed to save air qualities")
+	}
+	// sort by largest fetch time first, latest data on top
+	slices.SortFunc(airQualities, func(f model.AirQuality, s model.AirQuality) int {
+		// nil fetch time should be put at the bottom
+		if f.FetchTime == nil {
+			return 1
+		}
+		if s.FetchTime == nil {
+			return -1
+		}
+		// reverse for descending, i.e. latest first
+		return s.FetchTime.Second() - f.FetchTime.Second()
+	})
+
+	res := &pb.SaveAirQualityForBusinessResp{
+		Success: true,
+	}
+
+	//notif email
+	if len(airQualities) > 0 {
+		ah.emailNotif.NotifyAirQualityBusiness(bf.ID, int(airQualities[0].ID))
+	}
+
+	return res, nil
 }

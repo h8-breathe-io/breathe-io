@@ -70,5 +70,6 @@ func (as *airQualityService) GetAirQualityByID(id int) (*entity.AirQuality, erro
 		Pm10:       res.AirQuality.Pm10,
 		Nh3:        res.AirQuality.Nh3,
 		FetchTime:  res.AirQuality.FetchTime,
+		Location:   res.Loc,
 	}, nil
 }

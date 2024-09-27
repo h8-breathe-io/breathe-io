@@ -2,12 +2,10 @@ package service
 
 import (
 	pb "api-gateway/pb"
-	"context"
+	"api-gateway/util"
 	"fmt"
-	"os"
 
 	"github.com/labstack/gommon/log"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -23,17 +21,9 @@ func NewCronServices(AQService pb.AirQualityServiceClient, LocationService pb.Lo
 	}
 }
 
-func (cr *CronServices) createServiceContext() context.Context {
-	token := os.Getenv("AQ_SERVICE_TOKEN")
-	md := metadata.Pairs("auth_token", token)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	return ctx
-}
-
 func (cr *CronServices) RenewAQData() {
 
-	ctx := cr.createServiceContext()
+	ctx := util.CreateServiceContext()
 	//Get All Locations
 	res, err := cr.LocationService.GetLocations(ctx, &emptypb.Empty{})
 	if err != nil {

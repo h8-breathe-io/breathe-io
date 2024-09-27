@@ -125,7 +125,7 @@ func (bf *BusinessFacilityHandler) GetBusinessFacility(ctx context.Context, req 
 	// validate token and get user
 	user, err := bf.userService.ValidateAndGetUser(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "invalid token '%s'", err.Error())
+		return nil, status.Errorf(codes.Internal, "invalid token: %s", err.Error())
 	}
 
 	//check if business facility exists
@@ -136,7 +136,7 @@ func (bf *BusinessFacilityHandler) GetBusinessFacility(ctx context.Context, req 
 	}
 
 	// ensure business facility belongs to user
-	if businessFacility.UserID != uint64(user.ID) {
+	if businessFacility.UserID != uint64(user.ID) && user.ID != 0 {
 		return nil, errors.New("business facility doesn't belong to user")
 	}
 

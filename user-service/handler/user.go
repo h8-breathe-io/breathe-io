@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"user-service/model"
 	pb "user-service/pb/generated"
@@ -236,6 +237,20 @@ func (u *UserHandler) IsValidToken(ctx context.Context, req *pb.IsValidTokenRequ
 	//validate requests
 	if req.Token == "" {
 		return nil, errors.New("token is required")
+	}
+	log.Printf("validating token: %s", req.Token)
+	// add service acc
+	// check if service token
+	if req.Token == os.Getenv("SERVICE_TOKEN") {
+		log.Print("Service account found")
+		// TODO return dummy user?
+		return &pb.IsValidTokenResponse{
+			User: &pb.UserResponse{
+				Id:       0,
+				Username: "ServiceAccount",
+			},
+			Valid: true,
+		}, nil
 	}
 
 	//validate token

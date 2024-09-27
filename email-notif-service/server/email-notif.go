@@ -6,6 +6,7 @@ import (
 	"email-notif-service/constants"
 	"email-notif-service/pb"
 	"email-notif-service/service"
+	"email-notif-service/util"
 	"fmt"
 	"html/template"
 	"path/filepath"
@@ -38,6 +39,7 @@ func NewEmailNotifServer(
 		paymentTmpl:       paymentTmpl,
 		registerTmpl:      registerTmpl,
 		aqAlertTmpl:       aqAlertTmpl,
+		bfService:         service.NewBusinessFacilityService(),
 	}
 }
 
@@ -49,6 +51,7 @@ type EmailNotifServer struct {
 	paymentTmpl       *template.Template
 	registerTmpl      *template.Template
 	aqAlertTmpl       *template.Template
+	bfService         service.BusinessFacilityService
 	pb.UnimplementedEmailNotifServiceServer
 }
 
@@ -156,8 +159,22 @@ func (es *EmailNotifServer) NotifyRegister(c context.Context, req *pb.NotifyRegi
 
 type AQAlertEmailData struct {
 	Username string
+	Subject  string
 	Location string
 	Aqi      string
+}
+
+func GetLocString(loc *pb.Location) string {
+	var locStr string
+	if loc != nil {
+		if loc.LocationName == "Location" {
+			locStr = fmt.Sprintf("Lat: %f, Long: %f", loc.Latitude, loc.Longitude)
+		} else {
+			locStr = loc.LocationName
+		}
+
+	}
+	return locStr
 }
 
 func (es *EmailNotifServer) NotifyAirQuality(c context.Context, req *pb.NotifyAirQualityReq) (*pb.NotifyAirQualityResp, error) {
@@ -180,7 +197,8 @@ func (es *EmailNotifServer) NotifyAirQuality(c context.Context, req *pb.NotifyAi
 
 	data := AQAlertEmailData{
 		Username: user.Username,
-		Location: fmt.Sprintf("location-id %d", aq.LocationId),
+		Subject:  "Current Location",
+		Location: GetLocString(aq.Location),
 		Aqi:      fmt.Sprintf("%d", aq.Aqi),
 	}
 
@@ -209,6 +227,64 @@ func (es *EmailNotifServer) NotifyAirQuality(c context.Context, req *pb.NotifyAi
 	}
 
 	return &pb.NotifyAirQualityResp{
+		Status: "OK",
+		Email:  user.Email,
+	}, nil
+}
+
+func (es *EmailNotifServer) NotifyAirQualityBusiness(c context.Context, req *pb.NotifyAirQualityBusinessReq) (*pb.NotifyAirQualityBusinessResp, error) {
+
+	ctx := util.CreateServiceContext()
+	//get business
+	bf, err := es.bfService.GetBusinessFacilityByID(ctx, int(req.BusinessId))
+	if err != nil {
+		return nil, err
+	}
+
+	// get user
+	user, err := es.userService.GetUserByID(int(bf.UserID))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to get user: %s", err.Error())
+	}
+
+	// get air quality
+	aq, err := es.airQualityService.GetAirQualityByID(int(req.AirQualityId))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to get aq: %s", err.Error())
+	}
+
+	data := AQAlertEmailData{
+		Username: user.Username,
+		Subject:  bf.CompanyType,
+		Location: GetLocString(aq.Location),
+		Aqi:      fmt.Sprintf("%d", aq.Aqi),
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	// generate html for email
+	err = es.aqAlertTmpl.Execute(buf, &data)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to generate email: %s", err.Error())
+	}
+
+	// create email req
+	emailReq := service.SendEmailRequest{
+		From: service.Address{Email: constants.SENDER_EMAIL, Name: "Breathe.io"},
+		To: []service.Address{
+			{Email: user.Email, Name: user.Username},
+		},
+		Subject:  "Unhealthy Air Quality in Your Area",
+		Text:     buf.String(),
+		Html:     buf.String(),
+		Category: "AQ Alert",
+	}
+
+	err = es.emailService.SendEmail(&emailReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.NotifyAirQualityBusinessResp{
 		Status: "OK",
 		Email:  user.Email,
 	}, nil

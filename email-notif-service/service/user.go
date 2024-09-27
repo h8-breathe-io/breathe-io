@@ -1,11 +1,11 @@
 package service
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"email-notif-service/entity"
 	"email-notif-service/pb"
+	"email-notif-service/util"
 	"log"
 	"os"
 
@@ -53,7 +53,8 @@ type userService struct {
 // GetUserByID implements UserService.
 func (u *userService) GetUserByID(id int) (*entity.User, error) {
 
-	res, err := u.userClient.GetUser(context.TODO(), &pb.GetUserRequest{
+	ctx := util.CreateServiceContext()
+	res, err := u.userClient.GetUser(ctx, &pb.GetUserRequest{
 		Id: uint64(id),
 	})
 	if err != nil {
