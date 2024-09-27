@@ -56,7 +56,7 @@ func (is *invoiceService) generateInvoiceItems(forUserSub *model.UserSubscriptio
 		{
 			"name":     fmt.Sprintf("Breathe.io %s Tier, %d months", forUserSub.Subscription.Tier, forUserSub.Duration),
 			"quantity": forUserSub.Duration,
-			"price":    float64(forUserSub.Duration) * forUserSub.Subscription.PricePerMonth,
+			"price":    forUserSub.Subscription.PricePerMonth,
 			"url":      fmt.Sprintf("/user-subscriptions/%d", forUserSub.ID),
 		},
 	}
