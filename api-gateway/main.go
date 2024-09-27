@@ -498,6 +498,16 @@ func (h *handler) HandleGenerateReport(c echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
+func (h *handler) HandleGetProfile(c echo.Context) error {
+	token := util.ExtractAuthToken(c)
+	user, err := h.userClient.IsValidToken(context.TODO(), &pb.IsValidTokenRequest{Token: token})
+	if err != nil {
+		return util.NewAppError(http.StatusBadRequest, "service error", err.Error())
+	}
+
+	return c.JSON(http.StatusOK, user.User)
+}
+
 func main() {
 	godotenv.Load()
 
@@ -537,6 +547,7 @@ func main() {
 	users := e.Group("/users")
 	users.POST("/register", handler.HandleRegister)
 	users.POST("/login", handler.HandleLogin)
+	users.GET("/profile", handler.HandleGetProfile)
 
 	// air-qualities
 	aq := e.Group("/air-qualities")
