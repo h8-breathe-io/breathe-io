@@ -190,6 +190,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 		SubscriptionID: sub.ID,
 		Duration:       int(req.Duration),
 		Payment:        *newPayment,
+		Subscription:   sub,
 	}
 	err = ps.db.Save(newUserSub).Error
 	if err != nil {

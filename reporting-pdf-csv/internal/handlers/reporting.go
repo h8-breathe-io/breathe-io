@@ -75,8 +75,7 @@ func (s *ReportService) GenerateReport(ctx context.Context, req *pb.ReportReques
 			"bf.company_type, bf.location_id AS business_location_id, bf.total_emission, "+
 			"l.location_name, aq.aqi, aq.co, aq.no, aq.no2, aq.o3, aq.so2, aq.pm25, aq.pm10, aq.nh3").
 		Joins("LEFT JOIN business_facilities bf ON u.id = bf.user_id").
-		Joins("LEFT JOIN user_location ul ON u.id = ul.user_id").
-		Joins("LEFT JOIN locations l ON ul.location_id = l.id").
+		Joins("LEFT JOIN locations l ON bf.location_id = l.id").
 		Joins("LEFT JOIN air_qualities aq ON l.id = aq.location_id").
 		Where("u.id = ?", userID)
 

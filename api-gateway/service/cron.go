@@ -2,38 +2,31 @@ package service
 
 import (
 	pb "api-gateway/pb"
-	"context"
+	"api-gateway/util"
 	"fmt"
-	"os"
 
 	"github.com/labstack/gommon/log"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type CronServices struct {
 	AQService       pb.AirQualityServiceClient
 	LocationService pb.LocationServiceClient
+	BFService       pb.BusinessFacilitiesClient
 }
 
-func NewCronServices(AQService pb.AirQualityServiceClient, LocationService pb.LocationServiceClient) *CronServices {
+func NewCronServices(AQService pb.AirQualityServiceClient, LocationService pb.LocationServiceClient,
+	BFService pb.BusinessFacilitiesClient) *CronServices {
 	return &CronServices{
 		AQService:       AQService,
 		LocationService: LocationService,
+		BFService:       BFService,
 	}
 }
 
-func (cr *CronServices) createServiceContext() context.Context {
-	token := os.Getenv("AQ_SERVICE_TOKEN")
-	md := metadata.Pairs("auth_token", token)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-
-	return ctx
-}
-
 func (cr *CronServices) RenewAQData() {
-
-	ctx := cr.createServiceContext()
+	log.Print("Record Location AQ")
+	ctx := util.CreateServiceContext()
 	//Get All Locations
 	res, err := cr.LocationService.GetLocations(ctx, &emptypb.Empty{})
 	if err != nil {
@@ -46,6 +39,25 @@ func (cr *CronServices) RenewAQData() {
 		_, err := cr.AQService.SaveAirQualities(ctx, &pb.SaveAirQualitiesRequest{Latitude: location.Latitude, Longitude: location.Longitude})
 		if err != nil {
 			log.Errorf("Cron Error when getting new AQ data for location %s: %v\n", location.LocationName, err)
+		}
+	}
+}
+
+func (cr *CronServices) RenewBFAQData() {
+	log.Print("Record Business Facility AQ")
+	ctx := util.CreateServiceContext()
+	//Get All BFs
+	res, err := cr.BFService.GetBusinessFacilities(ctx, &pb.GetBFRequests{})
+	if err != nil {
+		log.Errorf("Cron Error when getting all business: %v\n", err)
+	}
+
+	//Get New AQ Data for each location
+	for _, bf := range res.BusinessFacilities {
+		fmt.Println("Getting air quality data for business with ID ", bf.Id)
+		_, err := cr.AQService.SaveAirQualityForBusiness(ctx, &pb.SaveAirQualityForBusinessReq{BusinessId: int64(bf.Id)})
+		if err != nil {
+			log.Errorf("Cron Error when getting new AQ data for business id %s: %v\n", bf.Id, err)
 		}
 	}
 }

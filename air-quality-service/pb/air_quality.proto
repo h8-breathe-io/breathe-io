@@ -8,6 +8,7 @@ service AirQualityService {
   rpc SaveAirQualities (SaveAirQualitiesRequest) returns (SaveAirQualitiesResponse) {}
   rpc SaveHistoricalAirQualities(SaveHistoricalAirQualitiesRequest) returns (SaveAirQualitiesResponse) {}
   rpc GetAirQualityByID (GetAirQualityByIDReq) returns (GetAirQualityByIDResp){}
+  rpc SaveAirQualityForBusiness(SaveAirQualityForBusinessReq) returns (SaveAirQualityForBusinessResp){}
 }
 
 message GetAirQualitiesRequest {
@@ -57,4 +58,22 @@ message GetAirQualityByIDReq{
 
 message GetAirQualityByIDResp{
   AirQuality air_quality=1;
+  Location loc=2;
+}
+
+message SaveAirQualityForBusinessReq{
+  int64 business_id=1;
+}
+
+message SaveAirQualityForBusinessResp{
+  bool success = 1;
+}
+
+
+
+message Location{
+  uint64 locationId = 1;
+  string locationName = 2;
+  double latitude = 3;
+  double longitude = 4;
 }
