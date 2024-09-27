@@ -9,6 +9,21 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func ExtractAuthToken(c echo.Context) string {
+	authHeader := c.Request().Header.Get("Authorization")
+
+	// Check if the header is in the correct format
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		log.Print("No token found, returning empty context")
+		// if not return emtpty context
+		return ""
+	}
+
+	// Extract the token part from the header (after "Bearer ")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	return token
+}
+
 func CreateContext(c echo.Context) context.Context {
 	//get token from header
 

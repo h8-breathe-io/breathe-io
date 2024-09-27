@@ -92,6 +92,18 @@ func (ps *PaymentServer) CompletePayment(c context.Context, req *pb.CompletePaym
 		return nil, status.Errorf(http.StatusInternalServerError, "internal server error: %s", err.Error())
 	}
 
+	// get user
+	user, err := ps.userService.GetUserByID(payment.UserID)
+	if err != nil {
+		return nil, status.Errorf(http.StatusInternalServerError, "failed to update user tier %s", err.Error())
+	}
+	// update user tier
+	user.Tier = "business"
+	_, err = ps.userService.UpdateUser(user)
+	if err != nil {
+		return nil, status.Errorf(http.StatusInternalServerError, "failed to update user tier %s", err.Error())
+	}
+
 	// notify email service
 	ps.emailNotifService.NotifyPaymentSucccess(int(payment.ID))
 
@@ -163,7 +175,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 
 	// generate payment and invoice
 	newPayment := &model.Payment{
-		UserID:         user.ID,
+		UserID:         int(user.ID),
 		PaymentGateway: "xendit",
 		Amount:         sub.PricePerMonth * float64(req.Duration),
 		Currency:       "IDR",
@@ -174,7 +186,7 @@ func (ps *PaymentServer) CreateUserSubcription(c context.Context, req *pb.Create
 
 	//create new model
 	newUserSub := &model.UserSubscription{
-		UserID:         uint(req.UserId),
+		UserID:         uint(user.ID),
 		SubscriptionID: sub.ID,
 		Duration:       int(req.Duration),
 		Payment:        *newPayment,
