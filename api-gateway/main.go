@@ -543,7 +543,7 @@ func main() {
 	//declare cron services
 	c := cron.New()
 	//running cron job exactly every start of the
-	c.AddFunc("*/1 * * * *", func() {
+	c.AddFunc("*/15 * * * *", func() {
 		cs.RenewAQData()
 	})
 	c.Start()
