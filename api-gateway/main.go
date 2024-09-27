@@ -286,7 +286,7 @@ func (h *handler) HandleSaveAirQualitiesHistorical(c echo.Context) error {
 		return util.NewAppError(http.StatusBadRequest, "invalid request body", err.Error())
 	}
 
-	ctx := h.createContext(c)
+	ctx := util.CreateContext(c)
 	res, err := h.aqClient.SaveHistoricalAirQualities(
 		ctx,
 		&req,
