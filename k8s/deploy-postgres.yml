@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deploy
+  labels:
+    app: postgres
+    part-of: breathe.io
+    tier: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-pod
+      part-of: breathe.io
+  template:
+    metadata:
+      name: postgres-pod
+      labels:
+        app: postgres-pod
+        part-of: breathe.io
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: breathe_io
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: root
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-volume-claim
+
+    

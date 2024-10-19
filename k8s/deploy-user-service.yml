@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-deploy
+  labels:
+    app: user-service
+    part-of: breathe.io
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service-pod
+      part-of: breathe.io
+  template:
+    metadata:
+      name: user-service-pod
+      labels:
+        app: user-service-pod
+        part-of: breathe.io
+    spec:
+      containers:
+        - name: user-service
+          image: localhost:5000/breathe-io/user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_USER
+              value: postgres
+            - name: DB_NAME
+              value: breathe_io
+            - name: DB_PASS
+              value: root
+            - name: DB_PORT
+              value: "5432"
+            - name: PORT
+              value: "5000"
+            - name: JWT_SECRET
+              value: secret
+            - name: LOCATION_GRPC_ADDR
+              value: location-service:5004
+    
+    
